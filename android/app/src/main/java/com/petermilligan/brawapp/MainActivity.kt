@@ -1,4 +1,4 @@
-package com.petermilligan.limemvp
+package com.petermilligan.brawapp
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

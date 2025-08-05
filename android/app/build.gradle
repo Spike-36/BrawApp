@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.petermilligan.limemvp'
+    namespace 'com.petermilligan.brawapp'
     defaultConfig {
-        applicationId 'com.petermilligan.limemvp'
+        applicationId 'com.petermilligan.brawapp'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

@@ -26,8 +26,8 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:scheme="limemvp"/>
-        <data android:scheme="exp+limemvp-1-0"/>
+        <data android:scheme="brawapp"/>
+        <data android:scheme="exp+brawapp"/>
       </intent-filter>
     </activity>
   </application>

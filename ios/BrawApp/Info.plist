@@ -10,10 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.petermilligan.brawapp",
-      "infoPlist": {
-        "NSSpeechRecognitionUsageDescription": "This app uses speech recognition to power voice search."
-      }
+      "bundleIdentifier": "com.petermilligan.brawapp"
     },
     "android": {
       "package": "com.petermilligan.brawapp",
@@ -33,11 +30,6 @@
           "backgroundColor": "#ffffff"
         }
       ]
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "fde040cc-9219-4733-8d2b-518f47a0d908"
-      }
-    }
+    ]
   }
 }
