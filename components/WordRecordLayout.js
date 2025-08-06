@@ -1,47 +1,31 @@
-import { Dimensions, Image, StyleSheet, View } from 'react-native';
-import StageAdvanceButton from './StageAdvanceButton';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const { height: screenHeight } = Dimensions.get('window');
-
-export default function WordRecordLayoutMVP({
+export default function WordRecordLayout({
   block,
-  imageAsset,
-  showImage = true,
-  onPlayAudio,
-  onShowTip,
-  stars = null,
-  showTipIcon = true,
-  showInfoIcon = true,
-  topContent,
-  bottomContent,
-  showAnswer = true,
-  stage,
-  wordId,
-  onAdvanceStage = () => {},
+  onPlayAudio = () => {},
+  onShowTip = () => {},
 }) {
+  if (!block) return null;
+
   return (
     <View style={styles.container}>
-      <View style={[styles.imageContainer, !showImage && { height: screenHeight * 0.478 }]}>
-        {showImage && imageAsset && (
-          <Image source={imageAsset} style={styles.image} resizeMode="cover" />
-        )}
+      {/* 🟡 Scottish */}
+      <Text style={styles.scottish}>{block?.scottish}</Text>
 
-        {stars && <View style={styles.starRow}>{stars}</View>}
+      {/* 🟣 Phonetic */}
+      <Text style={styles.phonetic}>{block?.phonetic}</Text>
 
-        {typeof stage === 'number' && stage < 4 && wordId && (
-          <StageAdvanceButton
-            wordId={wordId}
-            currentStage={stage}
-            onStageChange={onAdvanceStage}
-            skipLearn={true}
-          />
-        )}
-      </View>
+      {/* ⚪ English (tap to play audio) */}
+      <TouchableOpacity onPress={onPlayAudio}>
+        <Text style={styles.english}>{block?.english}</Text>
+      </TouchableOpacity>
 
-      <View style={styles.textSection}>
-        {topContent}
-        {bottomContent}
-      </View>
+      {/* 🟠 Tip icon */}
+      {block?.tip ? (
+        <TouchableOpacity onPress={onShowTip}>
+          <Text style={styles.tipIcon}>💡</Text>
+        </TouchableOpacity>
+      ) : null}
     </View>
   );
 }
@@ -49,29 +33,32 @@ export default function WordRecordLayoutMVP({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
-  },
-  imageContainer: {
-    height: screenHeight * 0.5,
-    width: '100%',
-    overflow: 'hidden',
-  },
-  image: {
-    height: '100%',
-    width: '100%',
-  },
-  starRow: {
-    position: 'absolute',
-    top: 60,
-    left: 16,
-    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: 30,
   },
-  textSection: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    paddingTop: 24,
-    paddingBottom: 24,
+  scottish: {
+    fontSize: 36,
+    color: '#2E2E2E', // charcoal
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  phonetic: {
+    fontSize: 20,
+    color: '#555', // dark grey
+    marginBottom: 30,
+    textAlign: 'center',
+  },
+  english: {
+    fontSize: 40,
+    color: '#2E2E2E',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  tipIcon: {
+    fontSize: 28,
+    color: '#FFD700',
+    marginTop: 20,
   },
 });

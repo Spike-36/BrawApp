@@ -1,16 +1,41 @@
-import { Entypo, Feather, MaterialIcons } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Audio } from 'expo-av';
 import { useEffect } from 'react';
 
 // Screens
-import ExploreIndexScreen from './screens/ExploreIndexScreen';
-import ExploreStack from './screens/ExploreStack'; // ✅ replaces direct List screen
 import HomeScreen from './screens/HomeScreen';
-import WordStack from './screens/WordStack'; // ✅ stack with WordRecordScreen
+import WordListScreen from './screens/WordListScreen';
+import WordScreen from './screens/WordScreen';
+
+// Data
+import blocks from './data/blocks.json';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
+
+function ListStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="WordList" component={WordListScreen} />
+      <Stack.Screen name="WordFromList" component={WordScreen} />
+    </Stack.Navigator>
+  );
+}
+
+function WordStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen
+        name="WordMain"
+        component={WordScreen}
+        initialParams={{ words: blocks, index: 0 }}
+      />
+    </Stack.Navigator>
+  );
+}
 
 export default function App() {
   useEffect(() => {
@@ -38,13 +63,17 @@ export default function App() {
         initialRouteName="Home"
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: '#FFD700',
-          tabBarInactiveTintColor: 'gray',
+          tabBarActiveTintColor: '#2E2E2E',      // charcoal active
+          tabBarInactiveTintColor: '#888',       // soft grey inactive
           tabBarStyle: {
-            backgroundColor: 'black',
-            borderTopColor: '#222',
+            backgroundColor: '#FAFAF8',          // warm light background
+            borderTopColor: '#DDD',              // subtle border
+            borderTopWidth: 1,
           },
-          tabBarLabelStyle: { fontSize: 12 },
+          tabBarLabelStyle: {
+            fontSize: 12,
+            fontWeight: '600',
+          },
         }}
       >
         <Tab.Screen
@@ -58,18 +87,8 @@ export default function App() {
           }}
         />
         <Tab.Screen
-          name="Index"
-          component={ExploreIndexScreen}
-          options={{
-            tabBarLabel: 'Index',
-            tabBarIcon: ({ color, size }) => (
-              <Entypo name="grid" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tab.Screen
           name="List"
-          component={ExploreStack} // ✅ now uses stack
+          component={ListStack}
           options={{
             tabBarLabel: 'List',
             tabBarIcon: ({ color, size }) => (
@@ -83,7 +102,7 @@ export default function App() {
           options={{
             tabBarLabel: 'Word',
             tabBarIcon: ({ color, size }) => (
-              <Feather name="book-open" size={size} color={color} />
+              <Feather name="book" size={size} color={color} />
             ),
           }}
         />

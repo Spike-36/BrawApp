@@ -7,9 +7,8 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { audioMap } from '../components/audioMap';
 import BottomNav from '../components/BottomNav';
-import { imageMap } from '../components/imageMap';
 import WordInteractionBlock from '../components/WordInteractionBlock';
-import WordRecordLayout from '../components/WordRecordLayout';
+import WordRecordLayout from '../components/WordRecordLayout'; // or 'WordRecordLayoutMVP'
 import { getStage, loadProgress, updateWordStage } from '../utils/progressStorage';
 
 export default function WordRecordScreen() {
@@ -112,12 +111,21 @@ export default function WordRecordScreen() {
       <View style={styles.topHalf}>
         <WordRecordLayout
           block={word}
-          imageAsset={imageMap[word.image]}
-          showImage
           showTipIcon
           showInfoIcon
           onPlayAudio={playAudio}
           onShowTip={() => setShowTip(true)}
+          topContent={
+            <>
+              <Text style={{ color: 'white', fontSize: 36, fontWeight: '600' }}>
+                {word?.scottish}
+              </Text>
+              <Text style={{ color: '#ccc', fontSize: 20, marginTop: 8 }}>
+                {word?.phonetic}
+              </Text>
+            </>
+          }
+          bottomContent={null}
         />
       </View>
 

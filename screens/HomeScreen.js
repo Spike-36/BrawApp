@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 export default function HomeScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Welcome to the Kumamoto App</Text>
+      <Text style={styles.text}>Welcome to Braw!</Text>
     </View>
   );
 }
@@ -11,12 +11,12 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
+    backgroundColor: '#FAFAF8', // light warm off-white
     justifyContent: 'center',
     alignItems: 'center',
   },
   text: {
-    color: '#FFD700',
+    color: '#2E2E2E', // charcoal
     fontSize: 24,
     fontWeight: '600',
   },

@@ -1,18 +1,24 @@
 // screens/WordStack.js
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import WordRecordScreen from './WordRecordScreen';
-import WordStartScreen from './WordStartScreen';
+import blocks from '../data/blocks.json';
+import WordScreen from './WordScreen'; // ✅ Correct, current screen
 
 const Stack = createNativeStackNavigator();
 
 export default function WordStack() {
   return (
     <Stack.Navigator
-      initialRouteName="WordStart" // ✅ this line is CRUCIAL
+      initialRouteName="Word"
       screenOptions={{ headerShown: false }}
     >
-      <Stack.Screen name="WordStart" component={WordStartScreen} />
-      <Stack.Screen name="WordRecord" component={WordRecordScreen} />
+      <Stack.Screen
+        name="Word"
+        component={WordScreen}
+        initialParams={{
+          words: blocks,
+          index: 0,
+        }}
+      />
     </Stack.Navigator>
   );
 }
