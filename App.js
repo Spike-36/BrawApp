@@ -63,16 +63,23 @@ export default function App() {
         initialRouteName="Home"
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: '#2E2E2E',      // charcoal active
-          tabBarInactiveTintColor: '#888',       // soft grey inactive
           tabBarStyle: {
-            backgroundColor: '#FAFAF8',          // warm light background
-            borderTopColor: '#DDD',              // subtle border
+            backgroundColor: '#6B8CC8',
+            borderTopColor: '#6B8CC8',
             borderTopWidth: 1,
+            height: 100,
+          },
+          tabBarItemStyle: {
+            paddingTop: 10,
+          },
+          tabBarIconStyle: {
+            marginBottom: 6, // Adjust to change spacing between icon and label
           },
           tabBarLabelStyle: {
-            fontSize: 12,
+            fontSize: 16, // Increased label size
             fontWeight: '600',
+            paddingBottom: 12, // Adjust to move label up/down
+            color: '#FFFFFF',
           },
         }}
       >
@@ -81,8 +88,8 @@ export default function App() {
           component={HomeScreen}
           options={{
             tabBarLabel: 'Home',
-            tabBarIcon: ({ color, size }) => (
-              <Feather name="home" size={size} color={color} />
+            tabBarIcon: () => (
+              <Feather name="home" size={26} color="#FFFFFF" />
             ),
           }}
         />
@@ -91,8 +98,8 @@ export default function App() {
           component={ListStack}
           options={{
             tabBarLabel: 'List',
-            tabBarIcon: ({ color, size }) => (
-              <MaterialIcons name="list" size={size} color={color} />
+            tabBarIcon: () => (
+              <MaterialIcons name="list" size={36} color="#FFFFFF" />
             ),
           }}
         />
@@ -101,8 +108,8 @@ export default function App() {
           component={WordStack}
           options={{
             tabBarLabel: 'Word',
-            tabBarIcon: ({ color, size }) => (
-              <Feather name="book" size={size} color={color} />
+            tabBarIcon: () => (
+              <Feather name="book" size={26} color="#FFFFFF" />
             ),
           }}
         />
