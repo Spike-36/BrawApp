@@ -26,10 +26,13 @@ export default function WordScreen() {
 
   useEffect(() => {
     let isMounted = true;
+    const audioKey = word?.id;
+
+    console.log('🔄 Loading word:', audioKey);
 
     const loadAndPlay = async () => {
-      if (!word?.audioScottish || !audioMap[word.audioScottish]) {
-        console.warn('⚠️ Missing audio file for:', word?.audioScottish);
+      if (!audioKey || !audioMap[audioKey]?.audioScottish) {
+        console.warn('⚠️ Missing audio file for:', `${audioKey}.scottish.mp3`);
         return;
       }
 
@@ -40,7 +43,7 @@ export default function WordScreen() {
           soundRef.current = null;
         }
 
-        const { sound } = await Audio.Sound.createAsync(audioMap[word.audioScottish]);
+        const { sound } = await Audio.Sound.createAsync(audioMap[audioKey].audioScottish);
         soundRef.current = sound;
 
         if (isMounted) {
@@ -60,7 +63,7 @@ export default function WordScreen() {
         soundRef.current = null;
       }
     };
-  }, [word?.audioScottish]);
+  }, [word?.id]);
 
   const playAudio = async () => {
     if (!soundRef.current) return;
@@ -71,8 +74,19 @@ export default function WordScreen() {
     }
   };
 
+  const playContextAudio = async () => {
+    if (!word?.id || !audioMap[word.id]?.audioScottishContext) return;
+    try {
+      const { sound } = await Audio.Sound.createAsync(audioMap[word.id].audioScottishContext);
+      await sound.playAsync();
+    } catch (err) {
+      console.warn('❌ Context audio error:', err.message);
+    }
+  };
+
   const goToPrev = () => {
     const prevIndex = (index - 1 + words.length) % words.length;
+    console.log('⬅️ Navigating to previous word:', prevIndex);
     navigation.navigate('Word', {
       screen: 'WordMain',
       params: { words, index: prevIndex },
@@ -81,6 +95,7 @@ export default function WordScreen() {
 
   const goToNext = () => {
     const nextIndex = (index + 1) % words.length;
+    console.log('➡️ Navigating to next word:', nextIndex);
     navigation.navigate('Word', {
       screen: 'WordMain',
       params: { words, index: nextIndex },
@@ -93,13 +108,7 @@ export default function WordScreen() {
         <WordRecordLayout
           block={word}
           onPlayAudio={playAudio}
-          topContent={
-            <>
-              <Text style={styles.mainText}>{word?.scottish}</Text>
-              <Text style={styles.phonetic}>{word?.phonetic}</Text>
-            </>
-          }
-          bottomContent={<Text style={styles.meaning}>{word?.meaning}</Text>}
+          onPlayContextAudio={playContextAudio}
         />
       </View>
 
@@ -124,24 +133,6 @@ const styles = StyleSheet.create({
   topHalf: {
     flex: 1,
     justifyContent: 'center',
-  },
-  mainText: {
-    fontSize: 36,
-    color: colors.textPrimary,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  phonetic: {
-    fontSize: 20,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  meaning: {
-    fontSize: 18,
-    color: colors.accent,
-    textAlign: 'center',
-    marginTop: 20,
   },
   navButtons: {
     flexDirection: 'row',

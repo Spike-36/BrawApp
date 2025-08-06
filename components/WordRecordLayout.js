@@ -1,64 +1,56 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import colors from './colors';
 
-export default function WordRecordLayout({
-  block,
-  onPlayAudio = () => {},
-  onShowTip = () => {},
-}) {
+export default function WordRecordLayout({ block, onPlayAudio, onPlayContextAudio }) {
   if (!block) return null;
 
   return (
     <View style={styles.container}>
-      {/* 🟡 Scottish */}
-      <Text style={styles.scottish}>{block?.scottish}</Text>
-
-      {/* 🟣 Phonetic */}
-      <Text style={styles.phonetic}>{block?.phonetic}</Text>
-
-      {/* ⚪ English (tap to play audio) */}
       <TouchableOpacity onPress={onPlayAudio}>
-        <Text style={styles.english}>{block?.english}</Text>
+        <Text style={styles.mainText}>{block.scottish}</Text>
       </TouchableOpacity>
 
-      {/* 🟠 Tip icon */}
-      {block?.tip ? (
-        <TouchableOpacity onPress={onShowTip}>
-          <Text style={styles.tipIcon}>💡</Text>
-        </TouchableOpacity>
-      ) : null}
+      <Text style={styles.phonetic}>{block.phonetic}</Text>
+
+      <Text style={styles.meaning}>{block.meaning}</Text>
+
+      <TouchableOpacity onPress={onPlayContextAudio}>
+        <Text style={styles.context}>{block.context}</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 30,
+    alignItems: 'flex-start',
+    paddingHorizontal: 24,
   },
-  scottish: {
-    fontSize: 36,
-    color: '#2E2E2E', // charcoal
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: 10,
+  mainText: {
+    fontSize: 65,
+    color: colors.textPrimary,
+    fontWeight: '500',
+     textAlign: 'left', // 👈 Add this line
+  alignSelf: 'flex-start', // 👈 Ensures the text aligns within its container
+    marginBottom: 16,
   },
   phonetic: {
     fontSize: 20,
-    color: '#555', // dark grey
-    marginBottom: 30,
+    color: colors.textSecondary,
     textAlign: 'center',
+    marginBottom: 12,
   },
-  english: {
-    fontSize: 40,
-    color: '#2E2E2E',
+  meaning: {
+    fontSize: 20,
+    color: colors.textSecondary,
     textAlign: 'center',
+    marginBottom: 24,
+  },
+  context: {
+    fontSize: 18,
+    color: '#444',
+    textAlign: 'center',
+    paddingHorizontal: 0,
     marginBottom: 20,
-  },
-  tipIcon: {
-    fontSize: 28,
-    color: '#FFD700',
-    marginTop: 20,
   },
 });

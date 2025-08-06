@@ -1,6 +1,7 @@
+
 import { useNavigation } from '@react-navigation/native';
 import { Audio } from 'expo-av';
-import { FlatList, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { audioMap } from '../components/audioMap';
@@ -13,7 +14,7 @@ export default function WordListScreen() {
 
   const handleLongPress = (index) => {
     navigation.navigate('Word', {
-      screen: 'WordRecord',
+      screen: 'WordMain', // ✅ fixed: matches your WordStack screen name
       params: {
         words: sortedBlocks,
         index,
@@ -22,14 +23,17 @@ export default function WordListScreen() {
     });
   };
 
-  const playAudio = async (filename) => {
-    const file = audioMap[filename];
-    if (!file) return;
+  const playAudio = async (id) => {
+    const file = audioMap[id]?.audioScottish;
+    if (!file) {
+      console.warn('⚠️ Missing audio file for ID:', id);
+      return;
+    }
     try {
       const { sound } = await Audio.Sound.createAsync(file);
       await sound.playAsync();
     } catch (err) {
-      console.warn('Audio playback failed:', err);
+      console.warn('❌ Audio playback failed:', err);
     }
   };
 
@@ -42,10 +46,13 @@ export default function WordListScreen() {
         renderItem={({ item, index }) => (
           <TouchableOpacity
             style={styles.row}
-            onPress={() => playAudio(item.audioScottish)}
+            onPress={() => playAudio(item.id)}
             onLongPress={() => handleLongPress(index)}
           >
-            <Text style={styles.text}>{item.scottish}</Text>
+            <View style={styles.inlineRow}>
+              <Text style={styles.word}>{item.scottish}</Text>
+              {item.meaning && <Text style={styles.meaning}>{item.meaning}</Text>}
+            </View>
           </TouchableOpacity>
         )}
       />
@@ -56,7 +63,7 @@ export default function WordListScreen() {
 const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
-    backgroundColor: '#FAFAF8', // light warm off-white
+    backgroundColor: '#FAFAF8',
   },
   listContainer: {
     paddingVertical: 20,
@@ -64,12 +71,23 @@ const styles = StyleSheet.create({
   },
   row: {
     paddingVertical: 14,
-    borderBottomColor: '#DDD', // subtle line for light background
+    borderBottomColor: '#DDD',
     borderBottomWidth: 1,
   },
-  text: {
-    color: '#2E2E2E', // charcoal
+  inlineRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  word: {
+    color: '#2E2E2E',
     fontSize: 20,
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  meaning: {
+    color: '#666',
+    fontSize: 18,
+    marginLeft: 12,
+    flexShrink: 1,
+    textAlign: 'right',
   },
 });
