@@ -15,12 +15,18 @@
       }
     },
     "android": {
-      "package": "com.petermilligan.brawapp",
-      "edgeToEdgeEnabled": true
+      "package": "com.kumamoto.brawapp",
+      "versionCode": 1,
+      "edgeToEdgeEnabled": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon-foreground.png",
+        "backgroundColor": "#000000"
+      }
     },
+    "owner": "spike36",
     "extra": {
       "eas": {
-        "projectId": "fde040cc-9219-4733-8d2b-518f47a0d908"
+        "projectId": "1c81c284-1947-46f8-89fe-7cb2786e37ec"
       }
     }
   }

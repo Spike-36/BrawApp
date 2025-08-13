@@ -1,4 +1,4 @@
-package com.petermilligan.brawapp
+package com.kumamoto.brawapp
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

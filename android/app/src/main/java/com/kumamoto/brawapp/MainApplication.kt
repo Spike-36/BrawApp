@@ -1,4 +1,4 @@
-package com.petermilligan.brawapp
+package com.kumamoto.brawapp
 
 import android.app.Application
 import android.content.res.Configuration

@@ -1,3 +1,4 @@
+// App.js
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
@@ -7,11 +8,15 @@ import { useEffect } from 'react';
 
 // Screens
 import HomeScreen from './screens/HomeScreen';
+import SettingsScreen from './screens/SettingsScreen';
 import WordListScreen from './screens/WordListScreen';
 import WordScreen from './screens/WordScreen';
 
 // Data
 import blocks from './data/blocks.json';
+
+// Prefs (your existing context)
+import { PrefsProvider } from './context/PrefsContext';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -37,7 +42,7 @@ function WordStack() {
   );
 }
 
-export default function App() {
+function AppRoot() {
   useEffect(() => {
     const configureAudio = async () => {
       try {
@@ -69,16 +74,12 @@ export default function App() {
             borderTopWidth: 1,
             height: 100,
           },
-          tabBarItemStyle: {
-            paddingTop: 10,
-          },
-          tabBarIconStyle: {
-            marginBottom: 6, // Adjust to change spacing between icon and label
-          },
+          tabBarItemStyle: { paddingTop: 10 },
+          tabBarIconStyle: { marginBottom: 6 },
           tabBarLabelStyle: {
-            fontSize: 16, // Increased label size
+            fontSize: 16,
             fontWeight: '600',
-            paddingBottom: 12, // Adjust to move label up/down
+            paddingBottom: 12,
             color: '#FFFFFF',
           },
         }}
@@ -88,9 +89,7 @@ export default function App() {
           component={HomeScreen}
           options={{
             tabBarLabel: 'Home',
-            tabBarIcon: () => (
-              <Feather name="home" size={26} color="#FFFFFF" />
-            ),
+            tabBarIcon: () => <Feather name="home" size={26} color="#FFFFFF" />,
           }}
         />
         <Tab.Screen
@@ -98,9 +97,7 @@ export default function App() {
           component={ListStack}
           options={{
             tabBarLabel: 'List',
-            tabBarIcon: () => (
-              <MaterialIcons name="list" size={36} color="#FFFFFF" />
-            ),
+            tabBarIcon: () => <MaterialIcons name="list" size={36} color="#FFFFFF" />,
           }}
         />
         <Tab.Screen
@@ -108,12 +105,26 @@ export default function App() {
           component={WordStack}
           options={{
             tabBarLabel: 'Word',
-            tabBarIcon: () => (
-              <Feather name="book" size={26} color="#FFFFFF" />
-            ),
+            tabBarIcon: () => <Feather name="book" size={26} color="#FFFFFF" />,
+          }}
+        />
+        <Tab.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{
+            tabBarLabel: 'Settings',
+            tabBarIcon: () => <Feather name="settings" size={26} color="#FFFFFF" />,
           }}
         />
       </Tab.Navigator>
     </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
+    <PrefsProvider>
+      <AppRoot />
+    </PrefsProvider>
   );
 }
