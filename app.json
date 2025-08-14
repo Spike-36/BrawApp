@@ -6,13 +6,15 @@
     "orientation": "portrait",
     "scheme": "brawapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "plugins": [
+      "expo-font"
+    ],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.petermilligan.brawapp",
-      "infoPlist": {
-        "NSSpeechRecognitionUsageDescription": "This app uses speech recognition to power voice search."
-      }
+      "bundleIdentifier": "com.petermilligan.brawapp"
     },
     "android": {
       "package": "com.kumamoto.brawapp",
