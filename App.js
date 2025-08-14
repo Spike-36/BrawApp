@@ -1,17 +1,23 @@
+// App.js
+import 'react-native-gesture-handler';
+import 'react-native-reanimated';
+
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Audio } from 'expo-av';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { AppState } from 'react-native';
 
-// Screens
 import HomeScreen from './screens/HomeScreen';
+import SettingsScreen from './screens/SettingsScreen';
 import WordListScreen from './screens/WordListScreen';
 import WordScreen from './screens/WordScreen';
 
-// Data
+import { PrefsProvider } from './context/PrefsContext';
 import blocks from './data/blocks.json';
+import { initAudio } from './services/audioManager.js';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -37,50 +43,41 @@ function WordStack() {
   );
 }
 
-export default function App() {
+function AppRoot() {
   useEffect(() => {
-    const configureAudio = async () => {
-      try {
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: false,
-          staysActiveInBackground: true,
-          playsInSilentModeIOS: true,
-          interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
-          interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
-          shouldDuckAndroid: true,
-          playThroughEarpieceAndroid: false,
-        });
-      } catch (err) {
-        console.warn('Audio mode setup failed:', err);
-      }
-    };
-    configureAudio();
+    // one-time init
+    initAudio();
+
+    // re-assert audio mode when app returns to foreground (Android quirk safeguard)
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') initAudio();
+    });
+    return () => sub.remove();
   }, []);
 
   return (
     <NavigationContainer>
+      <StatusBar style="light" />
       <Tab.Navigator
         initialRouteName="Home"
         screenOptions={{
           headerShown: false,
+          tabBarHideOnKeyboard: true,
           tabBarStyle: {
             backgroundColor: '#6B8CC8',
             borderTopColor: '#6B8CC8',
             borderTopWidth: 1,
-            height: 100,
+            height: 80,
           },
-          tabBarItemStyle: {
-            paddingTop: 10,
-          },
-          tabBarIconStyle: {
-            marginBottom: 6, // Adjust to change spacing between icon and label
-          },
+          tabBarItemStyle: { paddingTop: 8 },
+          tabBarIconStyle: { marginBottom: 4 },
           tabBarLabelStyle: {
-            fontSize: 16, // Increased label size
+            fontSize: 14,
             fontWeight: '600',
-            paddingBottom: 12, // Adjust to move label up/down
-            color: '#FFFFFF',
+            paddingBottom: 8,
           },
+          tabBarActiveTintColor: '#FFFFFF',
+          tabBarInactiveTintColor: 'rgba(255,255,255,0.7)',
         }}
       >
         <Tab.Screen
@@ -88,8 +85,8 @@ export default function App() {
           component={HomeScreen}
           options={{
             tabBarLabel: 'Home',
-            tabBarIcon: () => (
-              <Feather name="home" size={26} color="#FFFFFF" />
+            tabBarIcon: ({ color, size }) => (
+              <Feather name="home" size={size ?? 26} color={color} />
             ),
           }}
         />
@@ -98,8 +95,8 @@ export default function App() {
           component={ListStack}
           options={{
             tabBarLabel: 'List',
-            tabBarIcon: () => (
-              <MaterialIcons name="list" size={36} color="#FFFFFF" />
+            tabBarIcon: ({ color, size }) => (
+              <MaterialIcons name="list" size={size ?? 32} color={color} />
             ),
           }}
         />
@@ -108,12 +105,30 @@ export default function App() {
           component={WordStack}
           options={{
             tabBarLabel: 'Word',
-            tabBarIcon: () => (
-              <Feather name="book" size={26} color="#FFFFFF" />
+            tabBarIcon: ({ color, size }) => (
+              <Feather name="book" size={size ?? 26} color={color} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{
+            tabBarLabel: 'Settings',
+            tabBarIcon: ({ color, size }) => (
+              <Feather name="settings" size={size ?? 26} color={color} />
             ),
           }}
         />
       </Tab.Navigator>
     </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
+    <PrefsProvider>
+      <AppRoot />
+    </PrefsProvider>
   );
 }

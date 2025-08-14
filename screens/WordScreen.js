@@ -1,12 +1,12 @@
+// screens/WordScreen.js
 import { Feather } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Audio } from 'expo-av';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { audioMap } from '../components/audioMap';
 import colors from '../components/colors';
 import WordRecordLayout from '../components/WordRecordLayout';
+import { playByKey, playContextByKey, unloadMain } from '../services/audioManager.js';
 
 export default function WordScreen() {
   const navigation = useNavigation();
@@ -22,71 +22,28 @@ export default function WordScreen() {
   }
 
   const word = words[index];
-  const soundRef = useRef(null);
+  const audioKey = word?.id;
 
+  // Auto-play main audio whenever word changes
   useEffect(() => {
-    let isMounted = true;
-    const audioKey = word?.id;
+    if (!audioKey) return;
+    unloadMain(); // clear any previous audio
+    playByKey(audioKey, 'audioScottish'); // auto play on load
+    return () => unloadMain(); // cleanup on unmount or key change
+  }, [audioKey]);
 
-    console.log('🔄 Loading word:', audioKey);
+  const playAudio = useCallback(async () => {
+    if (!audioKey) return;
+    await playByKey(audioKey, 'audioScottish');
+  }, [audioKey]);
 
-    const loadAndPlay = async () => {
-      if (!audioKey || !audioMap[audioKey]?.audioScottish) {
-        console.warn('⚠️ Missing audio file for:', `${audioKey}.scottish.mp3`);
-        return;
-      }
-
-      try {
-        if (soundRef.current) {
-          await soundRef.current.unloadAsync();
-          soundRef.current.setOnPlaybackStatusUpdate(null);
-          soundRef.current = null;
-        }
-
-        const { sound } = await Audio.Sound.createAsync(audioMap[audioKey].audioScottish);
-        soundRef.current = sound;
-
-        if (isMounted) {
-          await sound.playAsync();
-        }
-      } catch (err) {
-        console.warn('❌ Audio playback error:', err.message);
-      }
-    };
-
-    loadAndPlay();
-
-    return () => {
-      isMounted = false;
-      if (soundRef.current) {
-        soundRef.current.unloadAsync();
-        soundRef.current = null;
-      }
-    };
-  }, [word?.id]);
-
-  const playAudio = async () => {
-    if (!soundRef.current) return;
-    try {
-      await soundRef.current.replayAsync();
-    } catch (err) {
-      console.warn('❌ Manual replay failed:', err.message);
-    }
-  };
-
-  const playContextAudio = async () => {
-    if (!word?.id || !audioMap[word.id]?.audioScottishContext) return;
-    try {
-      const { sound } = await Audio.Sound.createAsync(audioMap[word.id].audioScottishContext);
-      await sound.playAsync();
-    } catch (err) {
-      console.warn('❌ Context audio error:', err.message);
-    }
-  };
+  const playContextAudio = useCallback(async () => {
+    if (!audioKey) return;
+    await playContextByKey(audioKey, 'audioScottishContext');
+  }, [audioKey]);
 
   const goToPrev = () => {
     const prevIndex = (index - 1 + words.length) % words.length;
-    console.log('⬅️ Navigating to previous word:', prevIndex);
     navigation.navigate('Word', {
       screen: 'WordMain',
       params: { words, index: prevIndex },
@@ -95,7 +52,6 @@ export default function WordScreen() {
 
   const goToNext = () => {
     const nextIndex = (index + 1) % words.length;
-    console.log('➡️ Navigating to next word:', nextIndex);
     navigation.navigate('Word', {
       screen: 'WordMain',
       params: { words, index: nextIndex },
