@@ -1,22 +1,20 @@
-// lib/audioManager.js
+// services/audioManager.js  (or lib/audioManager.js if that's your path)
 import { Audio } from 'expo-av';
-// If your audioMap is a *named* export (your code shows it is):
 import { audioMap } from '../components/audioMap';
-// If it's a default export in your project, switch to:
-// import audioMap from '../components/audioMap';
 
 let mainSound = null;
-let isPlayingLock = false;
+let currentToken = 0; // identifies the latest play call
 
+// Re-apply mode each call (cheap; fixes Android focus quirks)
 export async function initAudio() {
   try {
     await Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
-      staysActiveInBackground: false, // true background requires native build
+      staysActiveInBackground: false, // true background needs native build
       playsInSilentModeIOS: true,
       interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
       interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
-      shouldDuckAndroid: false,       // important for Android
+      shouldDuckAndroid: false,
       playThroughEarpieceAndroid: false,
     });
   } catch (e) {
@@ -24,16 +22,17 @@ export async function initAudio() {
   }
 }
 
+async function stopAndUnload(sound) {
+  if (!sound) return;
+  try { await sound.stopAsync(); } catch {}
+  try { await sound.unloadAsync(); } catch {}
+}
+
+// Race-safe: snapshot then clear shared ref before unloading
 export async function unloadMain() {
-  try {
-    if (mainSound) {
-      await mainSound.stopAsync().catch(() => {});
-      await mainSound.unloadAsync().catch(() => {});
-    }
-  } finally {
-    mainSound = null;
-    isPlayingLock = false;
-  }
+  const s = mainSound;
+  mainSound = null;
+  await stopAndUnload(s);
 }
 
 export async function playByKey(id, field = 'audioScottish') {
@@ -44,38 +43,47 @@ export async function playByKey(id, field = 'audioScottish') {
     return;
   }
 
-  if (isPlayingLock) return;
-  isPlayingLock = true;
+  const token = ++currentToken; // mark this play as the latest
 
+  // Clear previous instance first (safe if nothing loaded)
+  await unloadMain();
+
+  let sound;
   try {
-    await unloadMain();
-    const { sound } = await Audio.Sound.createAsync(module, { shouldPlay: false });
-    mainSound = sound;
+    const created = await Audio.Sound.createAsync(module, { shouldPlay: false });
+    sound = created.sound;
 
+    // If a newer play started while loading, drop this one quietly
+    if (token !== currentToken) {
+      await stopAndUnload(sound);
+      return;
+    }
+
+    mainSound = sound;
     try { await mainSound.setVolumeAsync(1.0); } catch {}
     await mainSound.playAsync();
 
     mainSound.setOnPlaybackStatusUpdate((s) => {
-      if (s?.isLoaded && s.didJustFinish) isPlayingLock = false;
+      // keep instance for possible replay; cleanup happens on next play/unload
+      if (s?.isLoaded && s.didJustFinish && token === currentToken) {
+        // no-op
+      }
     });
   } catch (e) {
     console.warn('playByKey error:', e?.message || e);
-    isPlayingLock = false;
+    await stopAndUnload(sound);
   }
 }
 
 export async function replay() {
-  try {
-    if (mainSound) await mainSound.replayAsync();
-  } catch (e) {
+  try { if (mainSound) await mainSound.replayAsync(); } catch (e) {
     console.warn('replay failed:', e?.message || e);
   }
 }
 
 export async function stop() {
-  try {
-    if (mainSound) await mainSound.stopAsync();
-  } catch {}
+  await stopAndUnload(mainSound);
+  mainSound = null;
 }
 
 export async function playContextByKey(id, field = 'audioScottishContext') {
@@ -85,12 +93,11 @@ export async function playContextByKey(id, field = 'audioScottishContext') {
     console.warn(`Missing ${field} for id:`, id);
     return;
   }
-
   try {
     const { sound } = await Audio.Sound.createAsync(module, { shouldPlay: false });
     sound.setOnPlaybackStatusUpdate(async (s) => {
       if (s?.isLoaded && s.didJustFinish) {
-        try { await sound.unloadAsync(); } catch {}
+        await stopAndUnload(sound);
       }
     });
     await sound.playAsync();
