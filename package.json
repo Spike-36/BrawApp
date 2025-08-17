@@ -7,7 +7,9 @@
     "start": "expo start",
     "web": "expo start --web",
     "lint": "expo lint",
-    "reset-project": "node ./scripts/reset-project.js"
+    "reset-project": "node ./scripts/reset-project.js",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
