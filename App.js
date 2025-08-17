@@ -4,11 +4,13 @@ import 'react-native-reanimated';
 
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
+import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { enableScreens } from 'react-native-screens';
 
 import HomeScreen from './screens/HomeScreen';
 import SettingsScreen from './screens/SettingsScreen';
@@ -19,9 +21,12 @@ import { PrefsProvider } from './context/PrefsContext';
 import blocks from './data/blocks.json';
 import { initAudio } from './services/audioManager.js';
 
+enableScreens(true);
+
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
+// ---- Stacks ----
 function ListStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -43,12 +48,26 @@ function WordStack() {
   );
 }
 
-function AppRoot() {
-  useEffect(() => {
-    // one-time init
-    initAudio();
+// Optional: keep a subtle dark-ish nav theme without fighting your own colors
+const navTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: 'transparent',
+  },
+};
 
-    // re-assert audio mode when app returns to foreground (Android quirk safeguard)
+function AppRoot() {
+  const initOnceRef = useRef(false);
+
+  useEffect(() => {
+    // One-time audio mode init; guarded against Fast Refresh
+    if (!initOnceRef.current) {
+      initOnceRef.current = true;
+      initAudio();
+    }
+
+    // Re-assert audio mode when app returns to foreground (Android quirk safeguard)
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') initAudio();
     });
@@ -56,7 +75,7 @@ function AppRoot() {
   }, []);
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navTheme}>
       <StatusBar style="light" />
       <Tab.Navigator
         initialRouteName="Home"
@@ -128,7 +147,9 @@ function AppRoot() {
 export default function App() {
   return (
     <PrefsProvider>
-      <AppRoot />
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <AppRoot />
+      </GestureHandlerRootView>
     </PrefsProvider>
   );
 }

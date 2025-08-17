@@ -31,13 +31,15 @@ export default function SettingsScreen() {
           <Picker
             selectedValue={indexLang}
             onValueChange={(val) => setIndexLang(val)}
-            dropdownIconColor="#fff"
+            dropdownIconColor="#111"   // visible on light bg (Android)
+            // no Picker.style here — avoids iOS text disappearing
           >
             {INDEX_LANGS.map((code) => (
               <Picker.Item
                 key={code}
                 label={LANG_LABELS[code] ?? code.toUpperCase()}
                 value={code}
+                color="#111"            // force visible text on iOS & Android
               />
             ))}
           </Picker>
@@ -51,8 +53,8 @@ export default function SettingsScreen() {
           <Switch
             value={autoplay}
             onValueChange={setAutoplay}
-            trackColor={{ false: '#444', true: '#7FB77E' }}
-            thumbColor="#fff"
+            trackColor={{ false: '#D0D5DD', true: '#6B8CC8' }}
+            thumbColor="#FFFFFF"
           />
         </View>
       </View>
@@ -61,28 +63,34 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#0B0B0B' },
-  container: { flex: 1, padding: 20, gap: 16 },
-  heading: { color: '#fff', fontSize: 28, fontWeight: '800', marginBottom: 8 },
-  label: { color: '#ddd', fontSize: 16, marginTop: 8 },
+  // Light theme
+  safe: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, padding: 20, gap: 16, backgroundColor: '#FFFFFF' },
+
+  heading: { color: '#111', fontSize: 28, fontWeight: '800', marginBottom: 8 },
+  label: { color: '#222', fontSize: 16, marginTop: 8 },
+  help: { color: '#667085', fontSize: 13, marginTop: 4 },
+
+  // Picker container (light)
   pickerWrap: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#F2F4F7',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#2c2c2c',
+    borderColor: '#D0D5DD',
     overflow: 'hidden',
   },
+
+  // Row card (light)
   row: {
     marginTop: 16,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#F2F4F7',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#2c2c2c',
+    borderColor: '#D0D5DD',
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
-  help: { color: '#9aa0a6', fontSize: 13, marginTop: 4 },
 });
