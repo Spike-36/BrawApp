@@ -1,15 +1,27 @@
 // screens/HomeScreen.js
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { usePrefs } from '../context/PrefsContext';
 import blocks from '../data/blocks.json';
+import { isRTL as rtlCheck, t } from '../i18n';
+
+// Match SettingsScreen mapping
+const CODE_MAP = {
+  English: 'en',
+  French: 'fr',
+  Japanese: 'ja',
+  Arabic: 'ar',
+};
 
 export default function HomeScreen({ navigation }) {
-  const totalWords = Array.isArray(blocks) ? blocks.length : 0;
+  const { indexLang } = usePrefs();
+  const uiLangCode = CODE_MAP[indexLang] || 'en';
+  const isRTL = rtlCheck(uiLangCode);
 
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.container}>
+        {/* Fixed brand name — not translated */}
         <Text style={styles.title}>Braw</Text>
-        <Text style={styles.subtitle}>Words available: {totalWords}</Text>
 
         <Pressable
           style={[styles.btn, styles.primary]}
@@ -20,25 +32,42 @@ export default function HomeScreen({ navigation }) {
             })
           }
         >
-          <Text style={styles.btnText}>Start Word</Text>
+          <Text
+            style={[
+              styles.btnText,
+              isRTL && { writingDirection: 'rtl', textAlign: 'center' },
+            ]}
+          >
+            {t('start_word', uiLangCode)}
+          </Text>
         </Pressable>
 
         <Pressable
           style={[styles.btn, styles.secondary]}
-          onPress={() =>
-            navigation.navigate('List', {
-              screen: 'WordList',
-            })
-          }
+          onPress={() => navigation.navigate('List', { screen: 'WordList' })}
         >
-          <Text style={styles.btnText}>Open List</Text>
+          <Text
+            style={[
+              styles.btnText,
+              isRTL && { writingDirection: 'rtl', textAlign: 'center' },
+            ]}
+          >
+            {t('open_list', uiLangCode)}
+          </Text>
         </Pressable>
 
         <Pressable
           style={[styles.btn, styles.tertiary]}
           onPress={() => navigation.navigate('Settings')}
         >
-          <Text style={styles.btnText}>Settings</Text>
+          <Text
+            style={[
+              styles.btnText,
+              isRTL && { writingDirection: 'rtl', textAlign: 'center' },
+            ]}
+          >
+            {t('settings', uiLangCode)}
+          </Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -53,8 +82,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: { color: '#fff', fontSize: 28, fontWeight: '800', marginBottom: 8 },
-  subtitle: { color: '#bbb', marginBottom: 24 },
+  title: {
+    color: '#fff',
+    fontSize: 28,
+    fontFamily: 'LibreBaskerville_700Bold', // brand font
+    marginBottom: 24,
+  },
   btn: {
     width: '80%',
     paddingVertical: 14,
@@ -65,5 +98,9 @@ const styles = StyleSheet.create({
   primary: { backgroundColor: '#1e90ff' },
   secondary: { backgroundColor: '#6B8CC8' },
   tertiary: { backgroundColor: '#444' },
-  btnText: { color: '#fff', fontSize: 16, fontWeight: '700' }, // <-- fixed
+  btnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: 'LibreBaskerville_700Bold', // ensure consistent font
+  },
 });

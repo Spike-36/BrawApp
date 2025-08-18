@@ -11,5 +11,5 @@
   "include": [
     "**/*.ts",
     "**/*.tsx"
-, "context/PrefsContext.js"  ]
+, "context/PrefsContext.js", "theme/typography.js"  ]
 }

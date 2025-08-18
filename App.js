@@ -1,30 +1,42 @@
 // App.js
 import 'react-native-gesture-handler';
 import 'react-native-reanimated';
+import './i18n'; // initialize your i18n helper once
+
+import { StatusBar } from 'expo-status-bar';
+import { useEffect, useMemo, useRef } from 'react';
+import { AppState } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { enableScreens } from 'react-native-screens';
 
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect, useRef } from 'react';
-import { AppState } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { enableScreens } from 'react-native-screens';
 
 import HomeScreen from './screens/HomeScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import WordListScreen from './screens/WordListScreen';
 import WordScreen from './screens/WordScreen';
 
-import { PrefsProvider } from './context/PrefsContext';
+import { PrefsProvider, usePrefs } from './context/PrefsContext';
 import blocks from './data/blocks.json';
-import { initAudio } from './services/audioManager.js';
+import { t } from './i18n';
+import { initAudio } from './services/audioManager';
+import FontProvider from './theme/fonts';
 
 enableScreens(true);
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+
+// Map display name from PrefsContext -> i18n code
+const CODE_MAP = {
+  English: 'en',
+  French: 'fr',
+  Japanese: 'ja',
+  Arabic: 'ar',
+};
 
 // ---- Stacks ----
 function ListStack() {
@@ -37,18 +49,15 @@ function ListStack() {
 }
 
 function WordStack() {
+  const initialParams = useMemo(() => ({ words: blocks, index: 0 }), []);
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen
-        name="WordMain"
-        component={WordScreen}
-        initialParams={{ words: blocks, index: 0 }}
-      />
+      <Stack.Screen name="WordMain" component={WordScreen} initialParams={initialParams} />
     </Stack.Navigator>
   );
 }
 
-// Optional: keep a subtle dark-ish nav theme without fighting your own colors
+// Subtle nav theme
 const navTheme = {
   ...DefaultTheme,
   colors: {
@@ -59,15 +68,14 @@ const navTheme = {
 
 function AppRoot() {
   const initOnceRef = useRef(false);
+  const { indexLang } = usePrefs(); // <- read user’s chosen language
+  const uiLangCode = CODE_MAP[indexLang] || 'en';
 
   useEffect(() => {
-    // One-time audio mode init; guarded against Fast Refresh
     if (!initOnceRef.current) {
       initOnceRef.current = true;
       initAudio();
     }
-
-    // Re-assert audio mode when app returns to foreground (Android quirk safeguard)
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') initAudio();
     });
@@ -79,6 +87,7 @@ function AppRoot() {
       <StatusBar style="light" />
       <Tab.Navigator
         initialRouteName="Home"
+        detachInactiveScreens
         screenOptions={{
           headerShown: false,
           tabBarHideOnKeyboard: true,
@@ -92,8 +101,8 @@ function AppRoot() {
           tabBarIconStyle: { marginBottom: 4 },
           tabBarLabelStyle: {
             fontSize: 14,
-            fontWeight: '600',
             paddingBottom: 8,
+            fontFamily: 'LibreBaskerville_400Regular',
           },
           tabBarActiveTintColor: '#FFFFFF',
           tabBarInactiveTintColor: 'rgba(255,255,255,0.7)',
@@ -103,7 +112,7 @@ function AppRoot() {
           name="Home"
           component={HomeScreen}
           options={{
-            tabBarLabel: 'Home',
+            tabBarLabel: t('home', uiLangCode),
             tabBarIcon: ({ color, size }) => (
               <Feather name="home" size={size ?? 26} color={color} />
             ),
@@ -113,9 +122,9 @@ function AppRoot() {
           name="List"
           component={ListStack}
           options={{
-            tabBarLabel: 'List',
+            tabBarLabel: t('list', uiLangCode),
             tabBarIcon: ({ color, size }) => (
-              <MaterialIcons name="list" size={size ?? 32} color={color} />
+              <MaterialIcons name="list" size={size ?? 28} color={color} />
             ),
           }}
         />
@@ -123,7 +132,8 @@ function AppRoot() {
           name="Word"
           component={WordStack}
           options={{
-            tabBarLabel: 'Word',
+            // If your locale files have "words": "Words", use that:
+            tabBarLabel: t('words', uiLangCode),
             tabBarIcon: ({ color, size }) => (
               <Feather name="book" size={size ?? 26} color={color} />
             ),
@@ -133,7 +143,7 @@ function AppRoot() {
           name="Settings"
           component={SettingsScreen}
           options={{
-            tabBarLabel: 'Settings',
+            tabBarLabel: t('settings', uiLangCode),
             tabBarIcon: ({ color, size }) => (
               <Feather name="settings" size={size ?? 26} color={color} />
             ),
@@ -146,10 +156,12 @@ function AppRoot() {
 
 export default function App() {
   return (
-    <PrefsProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <AppRoot />
-      </GestureHandlerRootView>
-    </PrefsProvider>
+    <FontProvider>
+      <PrefsProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <AppRoot />
+        </GestureHandlerRootView>
+      </PrefsProvider>
+    </FontProvider>
   );
 }

@@ -1,20 +1,23 @@
-
+// screens/WordListScreen.js
 import { useNavigation } from '@react-navigation/native';
 import { Audio } from 'expo-av';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { audioMap } from '../components/audioMap';
+import { usePrefs } from '../context/PrefsContext'; // ✅ bring in prefs
 import blocks from '../data/blocks.json';
+import { pickMeaning } from '../utils/langPickers';
 
 const sortedBlocks = [...blocks].sort((a, b) => a.scottish.localeCompare(b.scottish));
 
 export default function WordListScreen() {
   const navigation = useNavigation();
+  const { indexLang } = usePrefs();   // ✅ get current language
 
   const handleLongPress = (index) => {
     navigation.navigate('Word', {
-      screen: 'WordMain', // ✅ fixed: matches your WordStack screen name
+      screen: 'WordMain',
       params: {
         words: sortedBlocks,
         index,
@@ -50,8 +53,13 @@ export default function WordListScreen() {
             onLongPress={() => handleLongPress(index)}
           >
             <View style={styles.inlineRow}>
+              {/* Scots word */}
               <Text style={styles.word}>{item.scottish}</Text>
-              {item.meaning && <Text style={styles.meaning}>{item.meaning}</Text>}
+
+              {/* Meaning in whichever language is active */}
+              <Text style={styles.meaning}>
+                {pickMeaning(item, indexLang)}
+              </Text>
             </View>
           </TouchableOpacity>
         )}
@@ -82,6 +90,7 @@ const styles = StyleSheet.create({
     color: '#2E2E2E',
     fontSize: 20,
     fontWeight: '600',
+    fontFamily: 'LibreBaskerville_400Regular',
   },
   meaning: {
     color: '#666',
@@ -89,5 +98,6 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     flexShrink: 1,
     textAlign: 'right',
+    fontFamily: 'PlayfairDisplay_400Regular',
   },
 });

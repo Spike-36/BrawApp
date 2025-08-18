@@ -158,12 +158,13 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     alignSelf: 'flex-start',
     marginBottom: 16,
+    fontFamily: 'LibreBaskerville_700Bold', // Scottish word headline
   },
   infoBtn: {
     marginLeft: 'auto',
     padding: 6,
     borderRadius: 16,
-    backgroundColor: '#222',
+    backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: '#333',
     marginBottom: 16,
@@ -180,36 +181,42 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'left',
     marginBottom: 8,
+    fontFamily: 'LibreBaskerville_400Regular',
   },
   ipa: {
     fontSize: 20,
     color: colors.textSecondary,
     textAlign: 'left',
     marginBottom: 12,
+    fontFamily: 'LibreBaskerville_400Regular',
   },
   grammar: {
     fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'left',
     marginBottom: 12,
+    fontFamily: 'LibreBaskerville_400Regular',
   },
   meaning: {
-    fontSize: 20,
+    fontSize: 22,
     color: colors.textSecondary,
     textAlign: 'left',
     marginBottom: 20,
+    fontFamily: 'PlayfairDisplay_400Regular', // definition uses Playfair
   },
   contextEN: {
     fontSize: 18,
     color: '#333',
     textAlign: 'left',
     marginBottom: 6,
+    fontFamily: 'LibreBaskerville_400Regular',
   },
   contextAlt: {
     fontSize: 17,
     color: '#6b6b6b',
     textAlign: 'left',
     marginBottom: 20,
+    fontFamily: 'LibreBaskerville_400Regular',
   },
   // Bottom sheet styles
   sheetBackdrop: {
@@ -223,8 +230,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
   },
-  sheetTitle: { color: '#fff', fontSize: 18, marginBottom: 10 },
-  sheetText: { color: '#ccc', fontSize: 16, lineHeight: 22 },
+  sheetTitle: { color: '#fff', fontSize: 18, marginBottom: 10, fontFamily: 'PlayfairDisplay_700Bold' },
+  sheetText: { color: '#ccc', fontSize: 16, lineHeight: 22, fontFamily: 'PlayfairDisplay_400Regular' },
   sheetClose: { marginTop: 16, alignSelf: 'flex-end' },
-  sheetCloseText: { color: '#89CFF0', fontSize: 16 },
+  sheetCloseText: { color: '#89CFF0', fontSize: 16, fontFamily: 'LibreBaskerville_400Regular' },
 });
