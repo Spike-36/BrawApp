@@ -4,7 +4,6 @@ import { SafeAreaView, StyleSheet, Switch, Text, View } from 'react-native';
 import { INDEX_LANGS, usePrefs } from '../context/PrefsContext';
 import { isRTL as rtlCheck, t } from '../i18n';
 
-// Display labels for the picker
 const LANG_LABELS = {
   English: 'English',
   French: 'French',
@@ -12,7 +11,6 @@ const LANG_LABELS = {
   Arabic: 'Arabic',
 };
 
-// Map the selected display name -> i18n code
 const CODE_MAP = {
   English: 'en',
   French: 'fr',
@@ -23,7 +21,6 @@ const CODE_MAP = {
 export default function SettingsScreen() {
   const { indexLang, setIndexLang, autoplay, setAutoplay } = usePrefs();
 
-  // Derive the language code the i18n helper expects
   const uiLangCode = CODE_MAP[indexLang] || 'en';
   const isRTL = rtlCheck(uiLangCode);
 
@@ -39,18 +36,20 @@ export default function SettingsScreen() {
           {t('settings', uiLangCode)}
         </Text>
 
+        {/* Language heading */}
         <Text
           style={[
-            styles.label,
+            styles.sectionHeading,
             isRTL && { writingDirection: 'rtl', textAlign: 'right' },
           ]}
         >
           {t('language', uiLangCode)}
         </Text>
 
+        {/* Language picker */}
         <View style={styles.pickerWrap}>
           <Picker
-            selectedValue={indexLang}             // keep storing the display name
+            selectedValue={indexLang}
             onValueChange={(val) => setIndexLang(val)}
             dropdownIconColor="#111"
           >
@@ -65,6 +64,17 @@ export default function SettingsScreen() {
           </Picker>
         </View>
 
+        {/* Audio heading */}
+        <Text
+          style={[
+            styles.audioHeading,
+            isRTL && { writingDirection: 'rtl', textAlign: 'right' },
+          ]}
+        >
+          {t('audio', uiLangCode)}
+        </Text>
+
+        {/* Autoplay toggle */}
         <View style={styles.row}>
           <View style={{ flex: 1 }}>
             <Text
@@ -104,6 +114,20 @@ const styles = StyleSheet.create({
   label: { color: '#222', fontSize: 16, marginTop: 8 },
   help: { color: '#667085', fontSize: 13, marginTop: 4 },
 
+  sectionHeading: {
+    color: '#222',
+    fontSize: 18,
+    marginTop: 24,
+    fontWeight: '600',
+  },
+
+  audioHeading: {
+    color: '#222',
+    fontSize: 18,
+    marginTop: 32, // pushed further down from Language
+    fontWeight: '600',
+  },
+
   pickerWrap: {
     backgroundColor: '#F2F4F7',
     borderRadius: 12,
@@ -113,7 +137,7 @@ const styles = StyleSheet.create({
   },
 
   row: {
-    marginTop: 16,
+    marginTop: 8,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,

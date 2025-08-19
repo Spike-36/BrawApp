@@ -8,10 +8,10 @@ const DEFAULT_PREFS = { indexLang: 'English', autoplay: false };
 
 // Display label → code
 const LANG_CODE_MAP = {
-  English: 'en',
-  French:  'fr',
-  Japanese:'ja',
-  Arabic:  'ar',
+  English:  'en',
+  French:   'fr',
+  Japanese: 'ja',
+  Arabic:   'ar',
 };
 
 const Ctx = createContext({
@@ -25,29 +25,39 @@ export function PrefsProvider({ children }) {
   const [indexLang, setIndexLang] = useState(DEFAULT_PREFS.indexLang);
   const [autoplay, setAutoplay] = useState(DEFAULT_PREFS.autoplay);
 
+  // Load saved prefs (only language)
   useEffect(() => {
     (async () => {
       try {
         const raw = await AsyncStorage.getItem('@prefs');
         if (raw) {
           const saved = JSON.parse(raw);
-          if (saved.indexLang && INDEX_LANGS.includes(saved.indexLang)) setIndexLang(saved.indexLang);
-          if (typeof saved.autoplay === 'boolean') setAutoplay(saved.autoplay);
+          if (saved.indexLang && INDEX_LANGS.includes(saved.indexLang)) {
+            setIndexLang(saved.indexLang);
+          }
         }
-      } catch {}
+      } catch {
+        // ignore errors
+      }
     })();
   }, []);
 
+  // Persist only language (not autoplay)
   useEffect(() => {
     (async () => {
       try {
-        await AsyncStorage.setItem('@prefs', JSON.stringify({ indexLang, autoplay }));
-      } catch {}
+        await AsyncStorage.setItem('@prefs', JSON.stringify({ indexLang }));
+      } catch {
+        // ignore errors
+      }
     })();
-  }, [indexLang, autoplay]);
+  }, [indexLang]);
 
+  // sanity fallback if indexLang somehow invalid
   useEffect(() => {
-    if (!INDEX_LANGS.includes(indexLang)) setIndexLang(INDEX_LANGS[0]);
+    if (!INDEX_LANGS.includes(indexLang)) {
+      setIndexLang(INDEX_LANGS[0]);
+    }
   }, [indexLang]);
 
   const uiLangCode = LANG_CODE_MAP[indexLang] || 'en';

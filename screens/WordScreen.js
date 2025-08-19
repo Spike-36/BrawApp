@@ -29,7 +29,11 @@ export default function WordScreen() {
   const word = words[index];
   const audioKey = word?.id;
 
-  // Auto-play when screen gains focus (Android needs a short defer to avoid silent first play)
+  // --- Contexts (EN always; alt only when indexLang !== 'English') ---
+  const englishContext = pickContext(word, 'English');
+  const altContext = indexLang !== 'English' ? pickContext(word, indexLang) : '';
+
+  // Auto-play when screen gains focus
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
@@ -38,7 +42,6 @@ export default function WordScreen() {
         if (!audioKey) return;
         await unloadMain();
         if (Platform.OS === 'android') {
-          // Give the route/layout/focus bridge a beat to settle
           await new Promise((r) => setTimeout(r, 120));
         }
         if (!cancelled) {
@@ -63,7 +66,6 @@ export default function WordScreen() {
     if (nextId) preloadByKey(nextId, 'audioScottish');
     if (prevId) preloadByKey(prevId, 'audioScottish');
 
-    // keep current clip warm; others will be released
     return () => cleanupPreload([audioKey]);
   }, [audioKey, index, words]);
 
@@ -99,7 +101,9 @@ export default function WordScreen() {
         <WordRecordLayout
           block={word}
           meaning={pickMeaning(word, indexLang)}
-          context={pickContext(word, indexLang)}
+          // pass explicit contexts
+          englishContext={englishContext}
+          altContext={altContext}
           onPlayAudio={playAudio}
           onPlayContextAudio={playContextAudio}
         />

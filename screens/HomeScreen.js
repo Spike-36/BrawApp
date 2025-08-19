@@ -1,106 +1,127 @@
 // screens/HomeScreen.js
-import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePrefs } from '../context/PrefsContext';
-import blocks from '../data/blocks.json';
-import { isRTL as rtlCheck, t } from '../i18n';
+import { isRTL as rtlCheck } from '../i18n';
 
-// Match SettingsScreen mapping
-const CODE_MAP = {
-  English: 'en',
-  French: 'fr',
-  Japanese: 'ja',
-  Arabic: 'ar',
-};
+const BLUE = '#016FCC';
+const CARD_WIDTH = '86%';
+const HERO_TOP_SPACING = 150;
+const BUTTON_WIDTH = '72%';
+const BUTTON_RADIUS = 28;
+
+const CODE_MAP = { English: 'en', French: 'fr', Japanese: 'ja', Arabic: 'ar' };
 
 export default function HomeScreen({ navigation }) {
-  const { indexLang } = usePrefs();
+  const { indexLang, autoplay } = usePrefs();
   const uiLangCode = CODE_MAP[indexLang] || 'en';
   const isRTL = rtlCheck(uiLangCode);
 
   return (
-    <SafeAreaView style={styles.root}>
-      <View style={styles.container}>
-        {/* Fixed brand name — not translated */}
-        <Text style={styles.title}>Braw</Text>
+    <ImageBackground source={require('../assets/images/brawHome.jpg')} style={styles.bg} resizeMode="cover">
+      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+        {/* HERO PANEL */}
+        <View style={styles.heroWrap}>
+          <View style={styles.heroCard}>
+            <Text style={styles.heroTitle}>Braw!</Text>
+            <Text style={styles.heroSubtitle}>scotspeak</Text>
+          </View>
+        </View>
 
-        <Pressable
-          style={[styles.btn, styles.primary]}
-          onPress={() =>
-            navigation.navigate('Word', {
-              screen: 'WordMain',
-              params: { words: blocks, index: 0 },
-            })
-          }
-        >
-          <Text
-            style={[
-              styles.btnText,
-              isRTL && { writingDirection: 'rtl', textAlign: 'center' },
-            ]}
+        {/* BUTTONS */}
+        <View style={styles.buttons}>
+          {/* Top button — language */}
+          <Pressable
+            style={[styles.btn, styles.btnPrimary, styles.btnSpacing]}
+            onPress={() => navigation.navigate('Settings')}
           >
-            {t('start_word', uiLangCode)}
-          </Text>
-        </Pressable>
+            <Text style={[styles.btnText, isRTL && { writingDirection: 'rtl', textAlign: 'center' }]}>
+              {indexLang}
+            </Text>
+          </Pressable>
 
-        <Pressable
-          style={[styles.btn, styles.secondary]}
-          onPress={() => navigation.navigate('List', { screen: 'WordList' })}
-        >
-          <Text
+          {/* Bottom button — autoplay status */}
+          <Pressable
             style={[
-              styles.btnText,
-              isRTL && { writingDirection: 'rtl', textAlign: 'center' },
+              styles.btn,
+              autoplay ? styles.btnPrimary : styles.btnDisabled, // highlight if on
             ]}
+            onPress={() => navigation.navigate('Settings')}
           >
-            {t('open_list', uiLangCode)}
-          </Text>
-        </Pressable>
-
-        <Pressable
-          style={[styles.btn, styles.tertiary]}
-          onPress={() => navigation.navigate('Settings')}
-        >
-          <Text
-            style={[
-              styles.btnText,
-              isRTL && { writingDirection: 'rtl', textAlign: 'center' },
-            ]}
-          >
-            {t('settings', uiLangCode)}
-          </Text>
-        </Pressable>
-      </View>
-    </SafeAreaView>
+            <Text
+              style={[
+                styles.btnText,
+                !autoplay && { opacity: 0.5 }, // dim text if off
+                isRTL && { writingDirection: 'rtl', textAlign: 'center' },
+              ]}
+            >
+              Audio Autoplay: {autoplay ? 'On' : 'Off'}
+            </Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000' },
-  container: {
-    flex: 1,
-    padding: 24,
+  bg: { flex: 1 },
+  safe: { flex: 1, backgroundColor: 'transparent' },
+
+  /* --- HERO --- */
+  heroWrap: {
     alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: HERO_TOP_SPACING,
   },
-  title: {
+  heroCard: {
+    width: CARD_WIDTH,
+    backgroundColor: BLUE,
+    borderRadius: 12,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
+  },
+  heroTitle: {
     color: '#fff',
-    fontSize: 28,
-    fontFamily: 'LibreBaskerville_700Bold', // brand font
-    marginBottom: 24,
+    fontSize: 54,
+    lineHeight: 56,
+    fontFamily: 'LibreBaskerville_700Bold',
+  },
+  heroSubtitle: {
+    color: '#fff',
+    marginTop: 12,
+    fontSize: 26,
+    letterSpacing: 3,
+    fontFamily: 'PlayfairDisplay_400Regular',
+  },
+
+  /* --- BUTTONS --- */
+  buttons: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   btn: {
-    width: '80%',
+    width: BUTTON_WIDTH,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: BUTTON_RADIUS,
     alignItems: 'center',
-    marginBottom: 12,
   },
-  primary: { backgroundColor: '#1e90ff' },
-  secondary: { backgroundColor: '#6B8CC8' },
-  tertiary: { backgroundColor: '#444' },
+  btnSpacing: {
+    marginBottom: 48, // space between language & autoplay
+  },
+  btnPrimary: { backgroundColor: 'rgba(0, 51, 102, 0.75)' },
+  btnDisabled: { backgroundColor: 'rgba(0, 51, 102, 0.35)' },
+
   btnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: 'LibreBaskerville_700Bold', // ensure consistent font
+    color: '#EAF2FF',
+    fontSize: 20,
+    letterSpacing: 2,
+    fontFamily: 'PlayfairDisplay_400Regular',
   },
 });

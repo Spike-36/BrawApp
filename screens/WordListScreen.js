@@ -5,7 +5,7 @@ import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { audioMap } from '../components/audioMap';
-import { usePrefs } from '../context/PrefsContext'; // ✅ bring in prefs
+import { usePrefs } from '../context/PrefsContext';
 import blocks from '../data/blocks.json';
 import { pickMeaning } from '../utils/langPickers';
 
@@ -13,16 +13,12 @@ const sortedBlocks = [...blocks].sort((a, b) => a.scottish.localeCompare(b.scott
 
 export default function WordListScreen() {
   const navigation = useNavigation();
-  const { indexLang } = usePrefs();   // ✅ get current language
+  const { indexLang } = usePrefs();
 
   const handleLongPress = (index) => {
     navigation.navigate('Word', {
       screen: 'WordMain',
-      params: {
-        words: sortedBlocks,
-        index,
-        mode: 'explore',
-      },
+      params: { words: sortedBlocks, index, mode: 'explore' },
     });
   };
 
@@ -85,6 +81,7 @@ const styles = StyleSheet.create({
   inlineRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'baseline', // ✅ align text to typographic baseline
   },
   word: {
     color: '#2E2E2E',
@@ -99,5 +96,6 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     textAlign: 'right',
     fontFamily: 'PlayfairDisplay_400Regular',
+    marginTop: -1, // ✅ tiny nudge up; remove if not needed
   },
 });

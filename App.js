@@ -1,7 +1,7 @@
 // App.js
 import 'react-native-gesture-handler';
 import 'react-native-reanimated';
-import './i18n'; // initialize your i18n helper once
+import './i18n';
 
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useMemo, useRef } from 'react';
@@ -23,6 +23,7 @@ import { PrefsProvider, usePrefs } from './context/PrefsContext';
 import blocks from './data/blocks.json';
 import { t } from './i18n';
 import { initAudio } from './services/audioManager';
+import colors from './theme/colors.ts'; // ← use centralized theme colors
 import FontProvider from './theme/fonts';
 
 enableScreens(true);
@@ -30,7 +31,6 @@ enableScreens(true);
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-// Map display name from PrefsContext -> i18n code
 const CODE_MAP = {
   English: 'en',
   French: 'fr',
@@ -68,7 +68,7 @@ const navTheme = {
 
 function AppRoot() {
   const initOnceRef = useRef(false);
-  const { indexLang } = usePrefs(); // <- read user’s chosen language
+  const { indexLang } = usePrefs();
   const uiLangCode = CODE_MAP[indexLang] || 'en';
 
   useEffect(() => {
@@ -92,8 +92,8 @@ function AppRoot() {
           headerShown: false,
           tabBarHideOnKeyboard: true,
           tabBarStyle: {
-            backgroundColor: '#6B8CC8',
-            borderTopColor: '#6B8CC8',
+            backgroundColor: colors.tabBarBg,     // ← from theme
+            borderTopColor: colors.tabBarBorder,  // ← from theme
             borderTopWidth: 1,
             height: 80,
           },
@@ -104,8 +104,8 @@ function AppRoot() {
             paddingBottom: 8,
             fontFamily: 'LibreBaskerville_400Regular',
           },
-          tabBarActiveTintColor: '#FFFFFF',
-          tabBarInactiveTintColor: 'rgba(255,255,255,0.7)',
+          tabBarActiveTintColor: colors.tabBarActive,       // ← from theme
+          tabBarInactiveTintColor: colors.tabBarInactive,   // ← from theme
         }}
       >
         <Tab.Screen
@@ -132,7 +132,6 @@ function AppRoot() {
           name="Word"
           component={WordStack}
           options={{
-            // If your locale files have "words": "Words", use that:
             tabBarLabel: t('words', uiLangCode),
             tabBarIcon: ({ color, size }) => (
               <Feather name="book" size={size ?? 26} color={color} />
