@@ -1,5 +1,5 @@
 // services/audioManager.js
-import { Audio } from 'expo-av';
+import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from 'expo-av';
 import { audioMap } from '../components/audioMap';
 
 let mainSound = null;
@@ -9,15 +9,20 @@ const preloadCache = new Map();    // key -> preloaded Audio.Sound
 const keyFor = (id, field) => `${id}:${field}`;
 
 async function ensureLoaded(sound, module) {
-  const status = await sound.getStatusAsync();
+  if (!sound) return { isLoaded: false };
+  const status = await sound.getStatusAsync().catch(() => ({ isLoaded: false }));
   if (!status.isLoaded) {
-    await sound.loadAsync(module, { shouldPlay: false }, true);
+    try {
+      await sound.loadAsync(module, { shouldPlay: false }, true);
+    } catch {
+      return { isLoaded: false };
+    }
   }
-  return sound.getStatusAsync();
+  return sound.getStatusAsync().catch(() => ({ isLoaded: false }));
 }
 
 async function primeForPlayback(sound) {
-  // Make sure not muted and volume is sane
+  if (!sound) return;
   try { await sound.setIsMutedAsync(false); } catch {}
   try { await sound.setVolumeAsync(1.0); } catch {}
   try { await sound.setPositionAsync(0); } catch {}
@@ -36,8 +41,9 @@ export async function initAudio() {
       allowsRecordingIOS: false,
       staysActiveInBackground: false,
       playsInSilentModeIOS: true,
-      interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
-      interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
+      // ❗ Expo 53+ requires enum values, not numbers
+      interruptionModeIOS: InterruptionModeIOS.MixWithOthers,
+      interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
       shouldDuckAndroid: true,             // helps regain focus
       playThroughEarpieceAndroid: false,   // route to speaker
     });
@@ -100,6 +106,9 @@ export async function playByKey(id, field = 'audioScottish') {
     return;
   }
 
+  // Ensure global audio mode before playback (helps Android focus)
+  await initAudio();
+
   const token = ++currentToken; // mark this play as the latest
   await unloadMain();
 
@@ -122,25 +131,29 @@ export async function playByKey(id, field = 'audioScottish') {
     }
 
     // ANDROID SAFETY: guarantee loaded + primed even from cache
-    await ensureLoaded(sound, module);
+    const st = await ensureLoaded(sound, module);
+    if (!st?.isLoaded) {
+      await stopAndUnload(sound);
+      return;
+    }
     await primeForPlayback(sound);
 
     mainSound = sound;
 
     // Try to play, then verify progress; if not, retry once after reload.
     const attemptPlay = async (isRetry = false) => {
+      if (!mainSound) return;
       await mainSound.playAsync();
       // Give Android a beat to start
       await new Promise((r) => setTimeout(r, 120));
-      const st = await mainSound.getStatusAsync();
+      const s = await mainSound.getStatusAsync().catch(() => null);
 
       const looksSilent =
-        st.isLoaded &&
-        (!st.isPlaying || (st.positionMillis ?? 0) === 0) &&
-        (st.durationMillis ?? 1) > 0;
+        s?.isLoaded &&
+        (!s.isPlaying || (s.positionMillis ?? 0) === 0) &&
+        (s.durationMillis ?? 1) > 0;
 
       if (looksSilent && !isRetry) {
-        // Reload and try once more
         await ensureLoaded(mainSound, module);
         await primeForPlayback(mainSound);
         await attemptPlay(true);
@@ -149,9 +162,11 @@ export async function playByKey(id, field = 'audioScottish') {
 
     await attemptPlay(false);
 
-    mainSound.setOnPlaybackStatusUpdate((_s) => {
-      // keep instance; cleanup happens on next play/unload
-    });
+    if (mainSound) {
+      mainSound.setOnPlaybackStatusUpdate((_s) => {
+        // keep instance; cleanup happens on next play/unload
+      });
+    }
   } catch (e) {
     console.warn('playByKey error:', e?.message || e);
     await stopAndUnload(sound);
@@ -161,8 +176,8 @@ export async function playByKey(id, field = 'audioScottish') {
 export async function replay() {
   try {
     if (!mainSound) return;
-    const st = await mainSound.getStatusAsync();
-    if (!st.isLoaded) return;
+    const st = await mainSound.getStatusAsync().catch(() => null);
+    if (!st?.isLoaded) return;
     await primeForPlayback(mainSound);
     await mainSound.playAsync();
   } catch (e) {
@@ -182,11 +197,18 @@ export async function playContextByKey(id, field = 'audioScottishContext') {
     console.warn(`Missing ${field} for id:`, id);
     return;
   }
+  // Ensure audio mode (Android focus)
+  await initAudio();
+
   let sound;
   try {
     const created = await Audio.Sound.createAsync(module, { shouldPlay: false });
     sound = created.sound;
-    await ensureLoaded(sound, module);
+    const st = await ensureLoaded(sound, module);
+    if (!st?.isLoaded) {
+      await stopAndUnload(sound);
+      return;
+    }
     await primeForPlayback(sound);
     await sound.playAsync();
     sound.setOnPlaybackStatusUpdate(async (s) => {
