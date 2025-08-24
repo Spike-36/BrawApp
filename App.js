@@ -7,12 +7,11 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useMemo, useRef } from 'react';
 import { AppState } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { enableScreens } from 'react-native-screens';
 
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack'; // ✅ JS stack (stable)
 
 import HomeScreen from './screens/HomeScreen';
 import SettingsScreen from './screens/SettingsScreen';
@@ -23,13 +22,11 @@ import { PrefsProvider, usePrefs } from './context/PrefsContext';
 import blocks from './data/blocks.json';
 import { t } from './i18n';
 import { initAudio } from './services/audioManager';
-import colors from './theme/colors.ts'; // ← use centralized theme colors
+import colors from './theme/colors.ts';
 import FontProvider from './theme/fonts';
 
-enableScreens(true);
-
 const Tab = createBottomTabNavigator();
-const Stack = createNativeStackNavigator();
+const Stack = createStackNavigator(); // ✅ JS version
 
 const CODE_MAP = {
   English: 'en',
@@ -52,7 +49,11 @@ function WordStack() {
   const initialParams = useMemo(() => ({ words: blocks, index: 0 }), []);
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="WordMain" component={WordScreen} initialParams={initialParams} />
+      <Stack.Screen
+        name="WordMain"
+        component={WordScreen}
+        initialParams={initialParams}
+      />
     </Stack.Navigator>
   );
 }
@@ -87,13 +88,13 @@ function AppRoot() {
       <StatusBar style="light" />
       <Tab.Navigator
         initialRouteName="Home"
-        detachInactiveScreens
+        detachInactiveScreens={false} // ✅ avoid screens bug
         screenOptions={{
           headerShown: false,
           tabBarHideOnKeyboard: true,
           tabBarStyle: {
-            backgroundColor: colors.tabBarBg,     // ← from theme
-            borderTopColor: colors.tabBarBorder,  // ← from theme
+            backgroundColor: colors.tabBarBg,
+            borderTopColor: colors.tabBarBorder,
             borderTopWidth: 1,
             height: 80,
           },
@@ -104,8 +105,8 @@ function AppRoot() {
             paddingBottom: 8,
             fontFamily: 'LibreBaskerville_400Regular',
           },
-          tabBarActiveTintColor: colors.tabBarActive,       // ← from theme
-          tabBarInactiveTintColor: colors.tabBarInactive,   // ← from theme
+          tabBarActiveTintColor: colors.tabBarActive,
+          tabBarInactiveTintColor: colors.tabBarInactive,
         }}
       >
         <Tab.Screen

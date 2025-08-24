@@ -1,23 +1,23 @@
 // screens/WordStack.js
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import blocks from '../data/blocks.json';
-import WordScreen from './WordScreen'; // ✅ Correct, current screen
+import WordScreen from './WordScreen';
 
-const Stack = createNativeStackNavigator();
+const Stack = createStackNavigator();
 
 export default function WordStack() {
   return (
     <Stack.Navigator
       initialRouteName="Word"
-      screenOptions={{ headerShown: false }}
+      screenOptions={{
+        headerShown: false,
+        cardStyle: { backgroundColor: 'black' },
+      }}
     >
       <Stack.Screen
         name="Word"
         component={WordScreen}
-        initialParams={{
-          words: blocks,
-          index: 0,
-        }}
+        initialParams={{ words: blocks, index: 0 }}
       />
     </Stack.Navigator>
   );

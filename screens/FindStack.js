@@ -1,16 +1,20 @@
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+// FindStack.js
+import { CardStyleInterpolators, createStackNavigator } from '@react-navigation/stack';
 import FindWordRecord from './FindWordRecord';
 import VoiceSearchScreen from './VoiceSearchScreen';
 
-const Stack = createNativeStackNavigator();
+const Stack = createStackNavigator();
 
 export default function FindStack() {
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        animation: 'fade',
-        contentStyle: { backgroundColor: 'black' },
+        // JS stack uses `cardStyle` (not `contentStyle`)
+        cardStyle: { backgroundColor: 'black' },
+        // approximate a simple fade transition
+        animationEnabled: true,
+        cardStyleInterpolator: CardStyleInterpolators.forFadeFromCenter,
       }}
     >
       <Stack.Screen name="VoiceSearch" component={VoiceSearchScreen} />
