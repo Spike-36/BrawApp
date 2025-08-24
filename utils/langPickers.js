@@ -1,40 +1,57 @@
+// utils/langPickers.js
+import { CODE_MAP } from '../constants/languages';
+
 const norm = (s) => (typeof s === 'string' ? s.trim() : '');
 
-export function pickMeaning(entry, lang = "English") {
-  if (!entry) return "";
-  if (lang === "English") return norm(entry.meaning);
-  if (entry[lang]) return norm(entry[lang]); // e.g. entry["French"]
-  // legacy nested shape fallback
-  if (entry.meaning && typeof entry.meaning === "object") {
-    const map = { English: "en", French: "fr", Japanese: "ja", Arabic: "ar" };
-    const code = map[lang];
-    return norm(entry.meaning?.[code] ?? entry.meaning?.en ?? "");
+// ---- Meaning ----
+export function pickMeaning(entry, lang = 'English') {
+  if (!entry) return '';
+  // English lives in "meaning" (FileMaker export); allow "English" as a fallback alias just in case
+  if (lang === 'English') return norm(entry.meaning ?? entry.English);
+
+  // Direct top-level key, e.g., entry["French"], entry["Chinese"], etc.
+  const direct = entry[lang];
+  if (norm(direct)) return direct;
+
+  // Legacy nested shape fallback: meaning: { en, fr, ja, ar, ... }
+  const code = CODE_MAP[lang];
+  if (entry.meaning && typeof entry.meaning === 'object' && code) {
+    return norm(entry.meaning[code] ?? entry.meaning.en);
   }
+
+  // Last resort: return English meaning if present
   return norm(entry.meaning);
 }
 
-export function pickContext(entry, lang = "English") {
-  if (!entry) return "";
-  if (lang === "English") return norm(entry.English_Context ?? entry.context);
-  const key = `${lang}_Context`; // e.g., "French_Context"
-  if (entry[key]) return norm(entry[key]);
-  // legacy nested shape fallback
-  if (entry.context && typeof entry.context === "object") {
-    const map = { English: "en", French: "fr", Japanese: "ja", Arabic: "ar" };
-    const code = map[lang];
-    return norm(entry.context?.[code] ?? entry.context?.en ?? "");
+// ---- Context ----
+export function pickContext(entry, lang = 'English') {
+  if (!entry) return '';
+  if (lang === 'English') return norm(entry.English_Context ?? entry.context);
+
+  const key = `${lang}_Context`; // e.g. "French_Context"
+  if (norm(entry[key])) return entry[key];
+
+  // Legacy nested shape: context: { fr, ja, ... }
+  const code = CODE_MAP[lang];
+  if (entry.context && typeof entry.context === 'object' && code) {
+    return norm(entry.context[code] ?? entry.context.en);
   }
-  return norm(entry.English_Context ?? entry.context ?? "");
+
+  return norm(entry.English_Context ?? entry.context ?? '');
 }
 
-export function pickInfo(entry, lang = "English") {
-  if (!entry) return "";
-  if (lang === "English") return norm(entry.English_Info);
+// ---- Info ----
+export function pickInfo(entry, lang = 'English') {
+  if (!entry) return '';
+  if (lang === 'English') return norm(entry.English_Info);
+
   const key = `${lang}_Info`;
-  if (entry[key]) return norm(entry[key]);
-  return norm(entry.English_Info ?? "");
+  if (norm(entry[key])) return entry[key];
+
+  return norm(entry.English_Info ?? '');
 }
 
-export function writingDir(lang = "English") {
-  return lang === "Arabic" ? "rtl" : "ltr";
+// ---- Direction ----
+export function writingDir(lang = 'English') {
+  return lang === 'Arabic' ? 'rtl' : 'ltr';
 }

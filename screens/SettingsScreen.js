@@ -1,96 +1,67 @@
 // screens/SettingsScreen.js
 import { Picker } from '@react-native-picker/picker';
+import { useEffect } from 'react';
 import { SafeAreaView, StyleSheet, Switch, Text, View } from 'react-native';
-import { INDEX_LANGS, usePrefs } from '../context/PrefsContext';
+import { CODE_MAP, VISIBLE_INDEX_LANGS } from '../constants/languages'; // <- single source of truth
+import { usePrefs } from '../context/PrefsContext';
 import { isRTL as rtlCheck, t } from '../i18n';
 
-const LANG_LABELS = {
-  English: 'English',
-  French: 'French',
-  Japanese: 'Japanese',
-  Arabic: 'Arabic',
-};
+// Display labels (right now identical, but easy to localize later)
+const LANG_LABELS = Object.fromEntries(VISIBLE_INDEX_LANGS.map(n => [n, n]));
 
-const CODE_MAP = {
-  English: 'en',
-  French: 'fr',
-  Japanese: 'ja',
-  Arabic: 'ar',
-};
+// Your i18n folder currently has en/fr/ja/ar. Others fallback to en.
+const LOCALIZED_CODES = new Set(['en', 'fr', 'ja', 'ar']);
 
 export default function SettingsScreen() {
   const { indexLang, setIndexLang, autoplay, setAutoplay } = usePrefs();
 
-  const uiLangCode = CODE_MAP[indexLang] || 'en';
+  // Clamp stored value to allowed set
+  useEffect(() => {
+    if (!VISIBLE_INDEX_LANGS.includes(indexLang)) {
+      setIndexLang(VISIBLE_INDEX_LANGS[0] || 'English');
+    }
+  }, [indexLang, setIndexLang]);
+
+  const effectiveIndexLang =
+    VISIBLE_INDEX_LANGS.includes(indexLang) ? indexLang : (VISIBLE_INDEX_LANGS[0] || 'English');
+
+  const candidateCode = CODE_MAP[effectiveIndexLang] || 'en';
+  const uiLangCode = LOCALIZED_CODES.has(candidateCode) ? candidateCode : 'en';
   const isRTL = rtlCheck(uiLangCode);
 
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <Text
-          style={[
-            styles.heading,
-            isRTL && { writingDirection: 'rtl', textAlign: 'right' },
-          ]}
-        >
+        <Text style={[styles.heading, isRTL && { writingDirection: 'rtl', textAlign: 'right' }]}>
           {t('settings', uiLangCode)}
         </Text>
 
-        {/* Language heading */}
-        <Text
-          style={[
-            styles.sectionHeading,
-            isRTL && { writingDirection: 'rtl', textAlign: 'right' },
-          ]}
-        >
+        <Text style={[styles.sectionHeading, isRTL && { writingDirection: 'rtl', textAlign: 'right' }]}>
           {t('language', uiLangCode)}
         </Text>
 
-        {/* Language picker */}
         <View style={styles.pickerWrap}>
           <Picker
-            selectedValue={indexLang}
+            selectedValue={effectiveIndexLang}
             onValueChange={(val) => setIndexLang(val)}
             dropdownIconColor="#111"
           >
-            {INDEX_LANGS.map((name) => (
-              <Picker.Item
-                key={name}
-                label={LANG_LABELS[name] ?? name}
-                value={name}
-                color="#111"
-              />
+            {VISIBLE_INDEX_LANGS.map((name) => (
+              <Picker.Item key={name} label={LANG_LABELS[name]} value={name} color="#111" />
             ))}
           </Picker>
         </View>
 
-        {/* Audio heading */}
-        <Text
-          style={[
-            styles.audioHeading,
-            isRTL && { writingDirection: 'rtl', textAlign: 'right' },
-          ]}
-        >
+        <Text style={[styles.audioHeading, isRTL && { writingDirection: 'rtl', textAlign: 'right' }]}>
           {t('audio', uiLangCode)}
         </Text>
 
-        {/* Autoplay toggle */}
         <View style={styles.row}>
           <View style={{ flex: 1 }}>
-            <Text
-              style={[
-                styles.label,
-                isRTL && { writingDirection: 'rtl', textAlign: 'right' },
-              ]}
-            >
+            <Text style={[styles.label, isRTL && { writingDirection: 'rtl', textAlign: 'right' }]}>
               {t('autoplay', uiLangCode)}
             </Text>
-            <Text
-              style={[
-                styles.help,
-                isRTL && { writingDirection: 'rtl', textAlign: 'right' },
-              ]}
-            >
+            <Text style={[styles.help, isRTL && { writingDirection: 'rtl', textAlign: 'right' }]}>
               {t('autoplay_description', uiLangCode)}
             </Text>
           </View>
@@ -114,19 +85,8 @@ const styles = StyleSheet.create({
   label: { color: '#222', fontSize: 16, marginTop: 8 },
   help: { color: '#667085', fontSize: 13, marginTop: 4 },
 
-  sectionHeading: {
-    color: '#222',
-    fontSize: 18,
-    marginTop: 24,
-    fontWeight: '600',
-  },
-
-  audioHeading: {
-    color: '#222',
-    fontSize: 18,
-    marginTop: 32, // pushed further down from Language
-    fontWeight: '600',
-  },
+  sectionHeading: { color: '#222', fontSize: 18, marginTop: 24, fontWeight: '600' },
+  audioHeading: { color: '#222', fontSize: 18, marginTop: 32, fontWeight: '600' },
 
   pickerWrap: {
     backgroundColor: '#F2F4F7',

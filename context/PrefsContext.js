@@ -1,22 +1,13 @@
 // context/PrefsContext.js
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-
-export const INDEX_LANGS = ['English', 'French', 'Japanese', 'Arabic'];
+import { CODE_MAP as LANG_CODE_MAP, VISIBLE_INDEX_LANGS } from '../constants/languages'; // <- single source of truth
 
 const DEFAULT_PREFS = { indexLang: 'English', autoplay: false };
 
-// Display label → code
-const LANG_CODE_MAP = {
-  English:  'en',
-  French:   'fr',
-  Japanese: 'ja',
-  Arabic:   'ar',
-};
-
 const Ctx = createContext({
   ...DEFAULT_PREFS,
-  uiLangCode: 'en',          // <- expose the code too
+  uiLangCode: 'en',
   setIndexLang: (_l) => {},
   setAutoplay: (_v) => {},
 });
@@ -25,38 +16,34 @@ export function PrefsProvider({ children }) {
   const [indexLang, setIndexLang] = useState(DEFAULT_PREFS.indexLang);
   const [autoplay, setAutoplay] = useState(DEFAULT_PREFS.autoplay);
 
-  // Load saved prefs (only language)
+  // Load saved prefs (language only)
   useEffect(() => {
     (async () => {
       try {
         const raw = await AsyncStorage.getItem('@prefs');
         if (raw) {
           const saved = JSON.parse(raw);
-          if (saved.indexLang && INDEX_LANGS.includes(saved.indexLang)) {
+          if (saved.indexLang && VISIBLE_INDEX_LANGS.includes(saved.indexLang)) {
             setIndexLang(saved.indexLang);
           }
         }
-      } catch {
-        // ignore errors
-      }
+      } catch {}
     })();
   }, []);
 
-  // Persist only language (not autoplay)
+  // Persist language (not autoplay)
   useEffect(() => {
     (async () => {
       try {
         await AsyncStorage.setItem('@prefs', JSON.stringify({ indexLang }));
-      } catch {
-        // ignore errors
-      }
+      } catch {}
     })();
   }, [indexLang]);
 
-  // sanity fallback if indexLang somehow invalid
+  // Clamp to allowed set if anything invalid sneaks in
   useEffect(() => {
-    if (!INDEX_LANGS.includes(indexLang)) {
-      setIndexLang(INDEX_LANGS[0]);
+    if (!VISIBLE_INDEX_LANGS.includes(indexLang)) {
+      setIndexLang(VISIBLE_INDEX_LANGS[0]);
     }
   }, [indexLang]);
 
