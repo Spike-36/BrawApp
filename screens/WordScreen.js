@@ -16,11 +16,16 @@ import {
 } from '../services/audioManager';
 import { pickContext, pickMeaning } from '../utils/langPickers';
 
+// ✅ i18n grammar + code map
+import { CODE_MAP } from '../constants/languages';
+import { tGrammar } from '../i18n/grammar';
+
 export default function WordScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const { words, index = 0 } = route.params || {};
   const { indexLang } = usePrefs();
+  const uiLangCode = CODE_MAP[indexLang] || 'en';
 
   if (!words || !Array.isArray(words) || index < 0 || index >= words.length) {
     return <View style={styles.container} />;
@@ -29,7 +34,10 @@ export default function WordScreen() {
   const word = words[index];
   const audioKey = word?.id;
 
-  // --- Contexts (EN always; alt only when indexLang !== 'English') ---
+  // Localized grammar label (falls back to EN/original if missing)
+  const grammarLabel = tGrammar(word?.grammarType, uiLangCode);
+
+  // Contexts (EN always; alt only when indexLang !== 'English')
   const englishContext = pickContext(word, 'English');
   const altContext = indexLang !== 'English' ? pickContext(word, indexLang) : '';
 
@@ -101,9 +109,9 @@ export default function WordScreen() {
         <WordRecordLayout
           block={word}
           meaning={pickMeaning(word, indexLang)}
-          // pass explicit contexts
           englishContext={englishContext}
           altContext={altContext}
+          grammarLabel={grammarLabel}   // ✅ pass localized grammar
           onPlayAudio={playAudio}
           onPlayContextAudio={playContextAudio}
         />

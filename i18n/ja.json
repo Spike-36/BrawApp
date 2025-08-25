@@ -9,5 +9,7 @@
   "language": "言語",
   "autoplay": "自動再生（リスンモード）",
   "autoplay_description": "音声を自動再生して次へ進みます。",
-    "audio": "オーディオ"
+  "audio": "オーディオ",
+  "scotspeak": "スコットランド語会話"
+
 }

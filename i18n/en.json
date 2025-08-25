@@ -9,5 +9,6 @@
   "language": "Language",
   "autoplay": "Autoplay (Listen mode)",
   "autoplay_description": "Automatically play audio and advance.",
-   "audio": "Audio"
+   "audio": "Audio",
+   "scotspeak": "scotspeak"
 }

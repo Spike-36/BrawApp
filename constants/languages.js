@@ -4,22 +4,27 @@ export const VISIBLE_INDEX_LANGS = [
   'French',
   'Spanish',
   'German',
-  'Italian',
   'Arabic',
   'Japanese',
   'Korean',
-  'Chinese',
 ];
 
-// Codes used for RTL checks / (optional) i18n lookups
+// Codes used for i18n + RTL checks
 export const CODE_MAP = {
   English: 'en',
-  French: 'fr',
+  French:  'fr',
   Spanish: 'es',
-  German: 'de',
-  Italian: 'it',
-  Arabic: 'ar',
-  Japanese: 'ja',
-  Korean: 'ko',
-  Chinese: 'zh', // adjust to 'zh-CN' or 'zh-TW' if you ever split
+  German:  'de',
+  Italian: 'it',   // kept here for later
+  Arabic:  'ar',
+  Japanese:'ja',
+  Korean:  'ko',
+  Chinese: 'zh',   // kept here for later
 };
+
+// Small helpers
+export const labelToCode = (label) => CODE_MAP[label] || 'en';
+export const codeToLabel = (code) =>
+  Object.keys(CODE_MAP).find((k) => CODE_MAP[k] === code) || 'English';
+
+export const isAllowedLabel = (label) => VISIBLE_INDEX_LANGS.includes(label);

@@ -1,10 +1,2 @@
-import labels from '../data/uiLabels.json';
+export { isRTL, t } from './index';
 
-export function t(key, lang = 'en') {
-  // If key exists in selected language → use it
-  if (labels[lang] && labels[lang][key]) {
-    return labels[lang][key];
-  }
-  // Otherwise → fallback to English
-  return labels.en[key] || key;
-}

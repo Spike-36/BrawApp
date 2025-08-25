@@ -11,7 +11,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack'; // ✅ JS stack (stable)
+import { createStackNavigator } from '@react-navigation/stack';
 
 import HomeScreen from './screens/HomeScreen';
 import SettingsScreen from './screens/SettingsScreen';
@@ -26,14 +26,12 @@ import colors from './theme/colors.ts';
 import FontProvider from './theme/fonts';
 
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator(); // ✅ JS version
+const Stack = createStackNavigator();
 
-const CODE_MAP = {
-  English: 'en',
-  French: 'fr',
-  Japanese: 'ja',
-  Arabic: 'ar',
-};
+import { CODE_MAP } from './constants/languages';
+
+
+console.log('[App.js] App loaded');
 
 // ---- Stacks ----
 function ListStack() {
@@ -72,6 +70,9 @@ function AppRoot() {
   const { indexLang } = usePrefs();
   const uiLangCode = CODE_MAP[indexLang] || 'en';
 
+  // 👀 Debug log
+  console.log('[nav] indexLang:', indexLang, '→ uiLangCode:', uiLangCode);
+
   useEffect(() => {
     if (!initOnceRef.current) {
       initOnceRef.current = true;
@@ -88,7 +89,7 @@ function AppRoot() {
       <StatusBar style="light" />
       <Tab.Navigator
         initialRouteName="Home"
-        detachInactiveScreens={false} // ✅ avoid screens bug
+        detachInactiveScreens={false}
         screenOptions={{
           headerShown: false,
           tabBarHideOnKeyboard: true,

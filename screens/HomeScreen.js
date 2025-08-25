@@ -2,7 +2,7 @@
 import { ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePrefs } from '../context/PrefsContext';
-import { isRTL as rtlCheck } from '../i18n';
+import { isRTL as rtlCheck, t } from '../i18n'; // ✅ import t
 
 const BLUE = '#016FCC';
 const CARD_WIDTH = '86%';
@@ -11,12 +11,10 @@ const BUTTON_WIDTH = '72%';
 const BUTTON_RADIUS = 28;
 const OVERLAY_ALPHA = 0.25; // strength of the darkening filter
 
-const CODE_MAP = { English: 'en', French: 'fr', Japanese: 'ja', Arabic: 'ar' };
-
 export default function HomeScreen({ navigation }) {
   const { indexLang } = usePrefs();
-  const uiLangCode = CODE_MAP[indexLang] || 'en';
-  const isRTL = rtlCheck(uiLangCode);
+
+  const isRTL = rtlCheck(indexLang);
 
   return (
     <ImageBackground
@@ -24,20 +22,14 @@ export default function HomeScreen({ navigation }) {
       style={styles.bg}
       resizeMode="cover"
     >
-      {/* Background overlay filter */}
-      <View
-        style={styles.overlay}
-        pointerEvents="none"
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      />
+      <View style={styles.overlay} />
 
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
         {/* HERO PANEL */}
         <View style={styles.heroWrap}>
           <View style={styles.heroCard}>
             <Text style={styles.heroTitle}>Braw!</Text>
-            <Text style={styles.heroSubtitle}>scotspeak</Text>
+            <Text style={styles.heroSubtitle}>{t('scotspeak', indexLang)}</Text> 
           </View>
         </View>
 
@@ -55,17 +47,17 @@ export default function HomeScreen({ navigation }) {
 
           {/* Bottom button — Audio */}
           <Pressable
-            style={[styles.btn, styles.btnPrimary]} // always same style as Language button
+            style={[styles.btn, styles.btnPrimary]}
             onPress={() => navigation.navigate('Settings')}
           >
             <Text
               style={[
                 styles.btnText,
-                { color: '#fff' }, // white text
+                { color: '#fff' },
                 isRTL && { writingDirection: 'rtl', textAlign: 'center' },
               ]}
             >
-              Audio
+              {t('audio', indexLang)} {/* ✅ translated */}
             </Text>
           </Pressable>
         </View>
@@ -77,14 +69,10 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   bg: { flex: 1 },
   safe: { flex: 1, backgroundColor: 'transparent' },
-
-  // Darkening overlay over the background image
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: `rgba(0,0,0,${OVERLAY_ALPHA})`,
   },
-
-  /* --- HERO --- */
   heroWrap: {
     alignItems: 'center',
     marginTop: HERO_TOP_SPACING,
@@ -115,8 +103,6 @@ const styles = StyleSheet.create({
     letterSpacing: 3,
     fontFamily: 'OpenSans_600SemiBold',
   },
-
-  /* --- BUTTONS --- */
   buttons: {
     flex: 1,
     justifyContent: 'center',
@@ -128,11 +114,8 @@ const styles = StyleSheet.create({
     borderRadius: BUTTON_RADIUS,
     alignItems: 'center',
   },
-  btnSpacing: {
-    marginBottom: 48,
-  },
-  btnPrimary: { backgroundColor: 'rgba(0, 51, 102, 0.75)' }, // shared style
-
+  btnSpacing: { marginBottom: 48 },
+  btnPrimary: { backgroundColor: 'rgba(0, 51, 102, 0.75)' },
   btnText: {
     color: '#EAF2FF',
     fontSize: 20,

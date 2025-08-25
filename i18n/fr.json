@@ -9,6 +9,7 @@
   "language": "Langue",
   "autoplay": "Lecture automatique (mode écoute)",
   "autoplay_description": "Lit l’audio automatiquement et passe au suivant.",
-  "audio": "Audio"
+  "audio": "Audio",
+  "scotspeak": "parler écossais"
 
 }

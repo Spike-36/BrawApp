@@ -2,6 +2,7 @@
 import { Feather } from '@expo/vector-icons';
 import { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { CODE_MAP } from '../constants/languages';
 import { usePrefs } from '../context/PrefsContext';
 import { tGrammar } from '../i18n/grammar';
 import { pickInfo } from '../utils/langPickers';
@@ -21,12 +22,13 @@ export default function WordRecordLayout({
 }) {
   if (!block) return null;
 
-  const { indexLang } = usePrefs ? usePrefs() : { indexLang: 'English' };
+  const { indexLang } = usePrefs();                     // ✅ no fallback shim
+  const uiLangCode = CODE_MAP[indexLang] || 'en';       // ✅ map label→code for i18n
 
   const shownIPA = norm(block?.ipa || '');
   const shownPhonetic = norm(block?.phonetic || '');
   const shownMeaning = typeof meaning === 'string' ? meaning : norm(block?.meaning || '');
-  const grammarLabel = block?.grammarType ? tGrammar(block.grammarType, 'en') : '';
+  const grammarLabel = block?.grammarType ? tGrammar(block.grammarType, uiLangCode) : ''; // ✅ localized
   const infoText = useMemo(() => pickInfo(block, indexLang), [block, indexLang]);
 
   return (
@@ -154,7 +156,7 @@ const styles = StyleSheet.create({
 
   divider: {
     height: 1.5,
-    backgroundColor: '#BBBBBB', // slightly darker gray
+    backgroundColor: '#BBBBBB',
     width: '100%',
     marginVertical: 12,
     borderRadius: 1,

@@ -10,21 +10,20 @@ import { usePrefs } from '../context/PrefsContext';
 import blocks from '../data/blocks.json';
 import { pickMeaning } from '../utils/langPickers';
 
-// Hide any row that doesn't have a value for the chosen display language
 const REQUIRE_MEANING_FOR_DISPLAY_LANG = true;
 
 const norm = (s) => (typeof s === 'string' ? s.trim() : '');
 
-function hasMeaningFor(entry, lang) {
-  if (!entry) return false;
-  if (lang === 'English') {
-    return Boolean(norm(entry.meaning ?? entry.English));
-  }
-  return Boolean(norm(entry[lang]));
-}
-
 function resolveDisplayLang(indexLang) {
   return VISIBLE_INDEX_LANGS.includes(indexLang) ? indexLang : VISIBLE_INDEX_LANGS[0];
+}
+
+// Returns the best string to show: chosen language if present, else English, else ""
+function getMeaningWithFallback(entry, langLabel) {
+  const primary = norm(pickMeaning(entry, langLabel));     // e.g. "Italian"
+  if (primary) return primary;
+  const english = norm(pickMeaning(entry, 'English'));
+  return english;
 }
 
 const sortedBlocks = [...blocks].sort((a, b) =>
@@ -38,7 +37,7 @@ export default function WordListScreen() {
   const displayLang = resolveDisplayLang(indexLang);
 
   const visibleBlocks = REQUIRE_MEANING_FOR_DISPLAY_LANG
-    ? sortedBlocks.filter((item) => hasMeaningFor(item, displayLang))
+    ? sortedBlocks.filter((item) => getMeaningWithFallback(item, displayLang))
     : sortedBlocks;
 
   const handleLongPress = (index) => {
@@ -65,18 +64,21 @@ export default function WordListScreen() {
         data={visibleBlocks}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
-        renderItem={({ item, index }) => (
-          <TouchableOpacity
-            style={styles.row}
-            onPress={() => playAudio(item.id)}
-            onLongPress={() => handleLongPress(index)}
-          >
-            <View style={styles.inlineRow}>
-              <Text style={styles.word}>{item.scottish}</Text>
-              <Text style={styles.meaning}>{pickMeaning(item, displayLang)}</Text>
-            </View>
-          </TouchableOpacity>
-        )}
+        renderItem={({ item, index }) => {
+          const meaning = getMeaningWithFallback(item, displayLang);
+          return (
+            <TouchableOpacity
+              style={styles.row}
+              onPress={() => playAudio(item.id)}
+              onLongPress={() => handleLongPress(index)}
+            >
+              <View style={styles.inlineRow}>
+                <Text style={styles.word}>{item.scottish}</Text>
+                <Text style={styles.meaning}>{meaning}</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        }}
       />
     </SafeAreaView>
   );
