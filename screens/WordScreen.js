@@ -6,7 +6,9 @@ import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import colors from '../components/colors';
 import WordRecordLayout from '../components/WordRecordLayout';
+import { CODE_MAP } from '../constants/languages';
 import { usePrefs } from '../context/PrefsContext';
+import { tGrammar } from '../i18n/grammar';
 import {
   cleanupPreload,
   playByKey,
@@ -16,15 +18,11 @@ import {
 } from '../services/audioManager';
 import { pickContext, pickMeaning } from '../utils/langPickers';
 
-// ✅ i18n grammar + code map
-import { CODE_MAP } from '../constants/languages';
-import { tGrammar } from '../i18n/grammar';
-
 export default function WordScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const { words, index = 0 } = route.params || {};
-  const { indexLang } = usePrefs();
+  const { indexLang, autoplay } = usePrefs();        // ✅ read autoplay
   const uiLangCode = CODE_MAP[indexLang] || 'en';
 
   if (!words || !Array.isArray(words) || index < 0 || index >= words.length) {
@@ -34,20 +32,17 @@ export default function WordScreen() {
   const word = words[index];
   const audioKey = word?.id;
 
-  // Localized grammar label (falls back to EN/original if missing)
-  const grammarLabel = tGrammar(word?.grammarType, uiLangCode);
-
-  // Contexts (EN always; alt only when indexLang !== 'English')
   const englishContext = pickContext(word, 'English');
   const altContext = indexLang !== 'English' ? pickContext(word, indexLang) : '';
+  const grammarLabel = tGrammar(word?.grammarType, uiLangCode);
 
-  // Auto-play when screen gains focus
+  // ✅ Only auto-play when autoplay is true
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
 
       (async () => {
-        if (!audioKey) return;
+        if (!audioKey || !autoplay) return; // <- guard with autoplay
         await unloadMain();
         if (Platform.OS === 'android') {
           await new Promise((r) => setTimeout(r, 120));
@@ -61,10 +56,10 @@ export default function WordScreen() {
         cancelled = true;
         unloadMain();
       };
-    }, [audioKey])
+    }, [audioKey, autoplay]) // <- include autoplay in deps
   );
 
-  // Preload next & previous audio clips
+  // Preload neighbors (fine regardless of autoplay)
   useEffect(() => {
     const nextIdx = (index + 1) % words.length;
     const prevIdx = (index - 1 + words.length) % words.length;
@@ -111,7 +106,7 @@ export default function WordScreen() {
           meaning={pickMeaning(word, indexLang)}
           englishContext={englishContext}
           altContext={altContext}
-          grammarLabel={grammarLabel}   // ✅ pass localized grammar
+          grammarLabel={grammarLabel}
           onPlayAudio={playAudio}
           onPlayContextAudio={playContextAudio}
         />
